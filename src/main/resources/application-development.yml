@@ -1,0 +1,37 @@
+# Development Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: development
+  cloud:
+    aws:
+      region:
+        static: us-east-2
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      stack:
+        auto: false
+
+# AWS Configuration (dummy values for local development)
+aws:
+  region: us-east-2
+  credentials:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+  sqs:
+    payment-request-queue: payment-request-queue
+    payment-response-success-queue: payment-response-success-queue
+    payment-response-failure-queue: payment-response-failure-queue
+    auto-create-queue: true # Automatically create queue if it doesn't exist
+
+# Mercado Pago Configuration (dummy values for local development)
+mercadopago:
+  access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
+  public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+
+logging:
+  level:
+    com.fiap.billing_service: DEBUG
+    com.icegreen.greenmail: DEBUG
+    org.springframework.mail: DEBUG

@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: billing-service
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+
+  cloud:
+    aws:
+      region:
+        static: us-east-2
+      credentials:
+        access-key: test-key
+        secret-key: test-secret
+      stack:
+        auto: false
+
+# Test configurations
+aws:
+  region: us-east-2
+  credentials:
+    access-key: test-key
+    secret-key: test-secret
+  sqs:
+    work-order-queue: test-work-order-queue
+    payment-response-queue: test-payment-response-queue
+    status-update-queue: test-status-update-queue
+
+mercadopago:
+  access-token: test-token
+  public-key: test-public-key
+
+server:
+  port: 0

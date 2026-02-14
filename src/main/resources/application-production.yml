@@ -1,0 +1,57 @@
+# Production Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: production
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+mail:
+  host: smtp.office365.com
+  port: 587
+  username: ${HOTMAIL_USERNAME}
+  password: ${HOTMAIL_PASSWORD}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+
+spring:
+  cloud:
+    aws:
+      region:
+        static: us-east-2
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      stack:
+        auto: false
+
+# AWS SES Configuration for Production
+aws:
+  region: us-east-2
+  credentials:
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+  sqs:
+    payment-request-queue: payment-request-queue-prod
+    payment-response-queue: payment-response-queue-prod
+    auto-create-queue: false
+
+# Mercado Pago Configuration (using production environment)
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+
+logging:
+  level:
+    com.fiap.billing_service: INFO
+    org.springframework.web: WARN
+    software.amazon.awssdk: WARN

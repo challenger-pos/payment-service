@@ -1,0 +1,50 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+*.pdf
+Context.pdf
+README.pdf
+SQS_LISTENER_GUIDE.pdf
+SQS_TROUBLESHOOTING.pdf
+
+# Environment files
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Test files
+**/test/
