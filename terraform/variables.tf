@@ -35,6 +35,19 @@ variable "app_image" {
   default     = "thiagotierre/billing-service:latest"
 }
 
+# CI/CD Pipeline Variables
+variable "image_repository" {
+  description = "Docker image repository (set by CI/CD pipeline)"
+  type        = string
+  default     = "docker.io/billing-service"
+}
+
+variable "image_tag" {
+  description = "Docker image tag (set by CI/CD pipeline with commit SHA)"
+  type        = string
+  default     = "latest"
+}
+
 variable "app_port" {
   description = "Application port"
   type        = number
