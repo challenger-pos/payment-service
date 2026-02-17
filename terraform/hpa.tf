@@ -49,6 +49,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "billing" {
           value          = 50
           period_seconds = 60
         }
+        select_policy = "Max"
       }
 
       scale_up {

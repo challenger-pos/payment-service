@@ -1,10 +1,10 @@
 region       = "us-east-2"
-environment  = "homologation"
+environment  = "dev"
 project_name = "challengeone"
 service_name = "billing"
 
 # Application
-app_replicas = 2
+app_replicas = 1  # Reduzido para dev
 app_image    = "thiagotierre/billing-service:latest"
 app_port     = 8080
 
@@ -15,12 +15,9 @@ app_port     = 8080
 # - mercadopago_access_token
 
 # Mercado Pago (public key não é sensível)
-mercadopago_public_key = "APP_USR-test-public-key"
-
-# SQS Queue (opcional - se usar mensageria)
-sqs_queue_url = ""
+mercadopago_public_key = "TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e"
 
 # HPA Configuration
-hpa_min_replicas  = 2
-hpa_max_replicas  = 10
-hpa_cpu_threshold = 70
+hpa_min_replicas  = 1  # Reduzido para dev
+hpa_max_replicas  = 3  # Reduzido para dev
+hpa_cpu_threshold = 80

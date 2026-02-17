@@ -16,7 +16,7 @@ resource "kubernetes_config_map" "billing" {
     AWS_REGION = var.region
     
     # SQS Queue (se configurado)
-    SQS_QUEUE_URL = var.sqs_queue_url
+    #SQS_QUEUE_URL = var.sqs_queue_url
     
     # Mercado Pago Public Key (não sensível)
     MERCADOPAGO_PUBLIC_KEY = var.mercadopago_public_key
