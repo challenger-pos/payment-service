@@ -4,21 +4,66 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Technology Stack](#technology-stack)
-4. [Quick Start](#quick-start)
-5. [Installation & Setup](#installation--setup)
-6. [Docker & Deployment](#docker--deployment)
-7. [Queue-Based Processing](#queue-based-processing)
-8. [Mercado Pago Integration](#mercado-pago-integration)
-9. [Payment Processing Flow](#payment-processing-flow)
-10. [Payment Entity & States](#payment-entity--states)
-11. [Configuration](#configuration)
-12. [Running the Application](#running-the-application)
-13. [Development](#development)
-14. [Troubleshooting](#troubleshooting)
-15. [Enterprise Features](#enterprise-features)
+1. [CI/CD Pipeline](#cicd-pipeline) ⭐ **START HERE**
+2. [Overview](#overview)
+3. [Architecture](#architecture)
+4. [Technology Stack](#technology-stack)
+5. [Quick Start](#quick-start)
+6. [Installation & Setup](#installation--setup)
+7. [Docker & Deployment](#docker--deployment)
+8. [Queue-Based Processing](#queue-based-processing)
+9. [Mercado Pago Integration](#mercado-pago-integration)
+10. [Payment Processing Flow](#payment-processing-flow)
+11. [Payment Entity & States](#payment-entity--states)
+12. [Configuration](#configuration)
+13. [Running the Application](#running-the-application)
+14. [Development](#development)
+15. [Troubleshooting](#troubleshooting)
+16. [Enterprise Features](#enterprise-features)
+
+---
+
+## CI/CD Pipeline
+
+> 🚀 **Automated CI/CD pipeline with GitHub Actions for Build → Test → Deploy**
+
+This project includes a **complete CI/CD pipeline** for automated:
+
+- ✅ **Build** - Maven compilation with Java 21
+- ✅ **Tests** - JUnit unit tests + Spring integration tests with ~80% coverage
+- ✅ **Quality** - SonarQube analysis with Quality Gate enforcement
+- ✅ **Security** - Trivy vulnerability scanning on Docker images
+- ✅ **Docker Build** - Multi-stage builds, Docker Hub push
+- ✅ **Deployment** - Automated rollout to Dev → Homolog → Prod via Terraform + Kubernetes
+
+### 📖 Quick Links
+
+| Document                                                         | Purpose                                            |
+| ---------------------------------------------------------------- | -------------------------------------------------- |
+| **[PIPELINE.md](./PIPELINE.md)**                                 | Pipeline overview, stages, and monitoring          |
+| **[CI_CD_SETUP.md](./CI_CD_SETUP.md)**                           | **Complete setup guide** (secrets, SonarQube, AWS) |
+| **[.github/workflows/ci-cd.yml](./.github/workflows/ci-cd.yml)** | Pipeline YAML definition                           |
+
+### ⚡ Quick Start - Setup CI/CD
+
+```bash
+# 1. Read the setup guide first
+cat CI_CD_SETUP.md
+
+# 2. Configure GitHub secrets
+# → Settings > Secrets and variables > Actions
+# Need: DOCKER_HUB_*, SONAR_*, AWS_*
+
+# 3. Create SonarCloud project
+# → https://sonarcloud.io
+
+# 4. Push to git and watch the pipeline run
+git add .
+git commit -m "feat: add ci-cd pipeline"
+git push origin feat/ci-cd
+```
+
+---
 
 ---
 
