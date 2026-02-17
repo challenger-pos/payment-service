@@ -1,0 +1,26 @@
+{
+  "budget_id": "550e8400-e29b-41d4-a716-446655440000",
+  "work_order_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "client_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+  "order_request": {
+    "type": "online",
+    "external_reference": "ORDER-2026-001",
+    "total_amount": "150.50",
+    "payer": {
+      "email": "test@testuser.com",
+      "first_name": "APRO"
+    },
+    "transactions": {
+      "payments": [
+        {
+          "amount": "150.50",
+          "payment_method": {
+            "id": "pix",
+            "type": "bank_transfer"
+          }
+        }
+      ]
+    }
+  },
+  "description": "Payment for work order services"
+}

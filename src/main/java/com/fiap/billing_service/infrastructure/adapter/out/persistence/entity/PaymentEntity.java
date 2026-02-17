@@ -12,6 +12,9 @@ public class PaymentEntity {
   @Id private UUID id;
 
   @Column(nullable = false)
+  private UUID budgetId;
+
+  @Column(nullable = false, unique = true)
   private UUID workOrderId;
 
   @Column(nullable = false)
@@ -24,6 +27,7 @@ public class PaymentEntity {
   private String status;
 
   private String externalPaymentId;
+  private String orderPaymentId;
   private String paymentMethod = "pix";
 
   @Column(length = 2000)
@@ -48,6 +52,14 @@ public class PaymentEntity {
 
   public void setId(UUID id) {
     this.id = id;
+  }
+
+  public UUID getBudgetId() {
+    return budgetId;
+  }
+
+  public void setBudgetId(UUID budgetId) {
+    this.budgetId = budgetId;
   }
 
   public UUID getWorkOrderId() {
@@ -136,5 +148,13 @@ public class PaymentEntity {
 
   public void setQrCodeBase64(String qrCodeBase64) {
     this.qrCodeBase64 = qrCodeBase64;
+  }
+
+  public String getOrderPaymentId() {
+    return orderPaymentId;
+  }
+
+  public void setOrderPaymentId(String orderPaymentId) {
+    this.orderPaymentId = orderPaymentId;
   }
 }
