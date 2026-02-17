@@ -15,7 +15,7 @@ app_port     = 8080
 # - mercadopago_access_token
 
 # Mercado Pago (public key não é sensível)
-mercadopago_public_key = "APP_USR-test-public-key"
+mercadopago_public_key = "TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912"
 
 # SQS Queue (opcional - se usar mensageria)
 sqs_queue_url = ""
