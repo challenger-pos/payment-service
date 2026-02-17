@@ -11,11 +11,13 @@ public class PaymentMapper {
   public PaymentEntity toEntity(Payment payment) {
     PaymentEntity entity = new PaymentEntity();
     entity.setId(payment.getId());
-    entity.setWorkOrderId(payment.getOrderId());
+    entity.setBudgetId(payment.getBudgetId());
+    entity.setWorkOrderId(payment.getWorkOrderId());
     entity.setClientId(payment.getClientId());
     entity.setAmount(payment.getAmount());
     entity.setStatus(payment.getStatus().name());
     entity.setExternalPaymentId(payment.getExternalPaymentId());
+    entity.setOrderPaymentId(payment.getOrderPaymentId());
     entity.setPaymentMethod(payment.getPaymentMethod());
     entity.setQrCode(payment.getQrCode());
     entity.setQrCodeBase64(payment.getQrCodeBase64());
@@ -28,7 +30,11 @@ public class PaymentMapper {
   public Payment toDomain(PaymentEntity entity) {
     Payment payment =
         new Payment(
-            entity.getId(), entity.getWorkOrderId(), entity.getClientId(), entity.getAmount());
+            entity.getId(),
+            entity.getBudgetId(),
+            entity.getWorkOrderId(),
+            entity.getClientId(),
+            entity.getAmount());
 
     // Restore payment status and other fields
     if (entity.getStatus() != null) {
@@ -36,6 +42,7 @@ public class PaymentMapper {
       if (status == PaymentStatus.APPROVED) {
         payment.markAsProcessing(
             entity.getExternalPaymentId(),
+            entity.getOrderPaymentId(),
             entity.getPaymentMethod(),
             entity.getQrCode(),
             entity.getQrCodeBase64());
@@ -47,6 +54,7 @@ public class PaymentMapper {
       } else if (status == PaymentStatus.PROCESSING) {
         payment.markAsProcessing(
             entity.getExternalPaymentId(),
+            entity.getOrderPaymentId(),
             entity.getPaymentMethod(),
             entity.getQrCode(),
             entity.getQrCodeBase64());

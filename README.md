@@ -113,6 +113,8 @@ billing-service/
 
 - **Queue Name**: `payment-request-queue`
 - **Description**: Listens for payment requests from other microservices
+- **Visibility Timeout**: 5 minutes (300 seconds)
+- **Acknowledgment Mode**: ON_SUCCESS (message removed only after successful processing)
 - **Message Format**:
 
 ```json
@@ -126,6 +128,54 @@ billing-service/
   "description": "Payment for order XYZ"
 }
 ```
+
+### Dead Letter Queue (DLQ)
+
+- **Queue Name**: `payment-request-dlq`
+- **Description**: Stores messages that failed processing after multiple attempts
+- **Max Receive Count**: 3 (messages move to DLQ after 3 failed attempts)
+- **Purpose**: Prevents infinite retry loops for permanently failing messages
+
+**DLQ Setup for LocalStack (Development):**
+
+```bash
+# Run the setup script
+chmod +x scripts/setup-sqs-dlq.sh
+./scripts/setup-sqs-dlq.sh
+```
+
+This script creates:
+
+- Main queue (`payment-request-queue`) with 5-minute visibility timeout
+- Dead letter queue (`payment-request-dlq`)
+- Redrive policy: maxReceiveCount=3
+
+### Message Idempotency
+
+The service implements **defense-in-depth idempotency** to prevent duplicate payment processing:
+
+1. **Application-Level Check**: Service checks for existing payment by `workOrderId` before creating new one
+2. **Database Constraint**: Unique constraint on `work_order_id` column prevents duplicate insertions
+3. **Duplicate Handling**: If duplicate detected, returns existing payment (safe retry)
+
+**Why Idempotency Matters:**
+
+- SQS can deliver messages more than once (at-least-once delivery)
+- Visibility timeout expiry causes message redelivery
+- Network issues may cause message reprocessing
+- Multiple service instances may receive same message
+
+**What Happens on Duplicate:**
+
+- If payment already exists with status ≠ PENDING: Returns existing payment immediately
+- If payment is PENDING: Continues processing (legitimate retry after crash)
+- If race condition occurs: Database constraint prevents duplicate, existing payment returned
+
+**Logging:**
+
+- Duplicate detection events logged with WARN level
+- Race condition handling logged with INFO level
+- Includes workOrderId and payment status for troubleshooting
 
 ### Payment Response Queue
 

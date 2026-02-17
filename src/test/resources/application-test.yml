@@ -26,6 +26,8 @@ spring:
         secret-key: test-secret
       stack:
         auto: false
+      sqs:
+        enabled: false
 
 # Test configurations
 aws:
@@ -34,9 +36,12 @@ aws:
     access-key: test-key
     secret-key: test-secret
   sqs:
-    work-order-queue: test-work-order-queue
-    payment-response-queue: test-payment-response-queue
-    status-update-queue: test-status-update-queue
+    payment-request-queue: test-payment-request-queue
+    payment-request-dlq: test-payment-request-dlq
+    payment-response-success-queue: test-payment-response-success-queue
+    payment-response-failure-queue: test-payment-response-failure-queue
+    auto-create-queue: false
+    max-receive-count: 3
 
 mercadopago:
   access-token: test-token

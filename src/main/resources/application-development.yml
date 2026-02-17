@@ -12,6 +12,12 @@ spring:
         secret-key: ${AWS_SECRET_KEY}
       stack:
         auto: false
+      sqs:
+        listener:
+          # Use ON_SUCCESS acknowledgment mode for idempotency
+          acknowledgement-mode: on-success
+          # 5 minutes visibility timeout (enough for Mercado Pago API calls + processing)
+          visibility-timeout: 300
 
 # AWS Configuration (dummy values for local development)
 aws:
@@ -21,9 +27,11 @@ aws:
     secret-key: ${AWS_SECRET_KEY}
   sqs:
     payment-request-queue: payment-request-queue
+    payment-request-dlq: payment-request-dlq # Dead Letter Queue for failed messages
     payment-response-success-queue: payment-response-success-queue
     payment-response-failure-queue: payment-response-failure-queue
     auto-create-queue: true # Automatically create queue if it doesn't exist
+    max-receive-count: 3 # Move to DLQ after 3 failed attempts
 
 # Mercado Pago Configuration (dummy values for local development)
 mercadopago:
