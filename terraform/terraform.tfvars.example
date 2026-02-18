@@ -7,7 +7,7 @@ project_name = "challengeone"
 service_name = "billing"
 
 # Environment (development, homologation, production)
-environment = "development"
+environment = "dev"
 
 # Application Configuration
 app_replicas = 2

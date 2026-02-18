@@ -32,20 +32,6 @@ variable "app_replicas" {
 variable "app_image" {
   description = "Docker image for billing service"
   type        = string
-  default     = "thiagotierre/billing-service:latest"
-}
-
-# CI/CD Pipeline Variables
-variable "image_repository" {
-  description = "Docker image repository (set by CI/CD pipeline)"
-  type        = string
-  default     = "docker.io/billing-service"
-}
-
-variable "image_tag" {
-  description = "Docker image tag (set by CI/CD pipeline with commit SHA)"
-  type        = string
-  default     = "latest"
 }
 
 variable "app_port" {
@@ -54,14 +40,7 @@ variable "app_port" {
   default     = 8080
 }
 
-# Database credentials
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-# AWS Credentials (for SQS)
+# AWS Credentials (for DynamoDB and SQS)
 variable "aws_access_key" {
   description = "AWS Access Key for SQS"
   type        = string
@@ -104,7 +83,7 @@ variable "hpa_min_replicas" {
 variable "hpa_max_replicas" {
   description = "HPA maximum replicas"
   type        = number
-  default     = 10
+  default     = 4
 }
 
 variable "hpa_cpu_threshold" {

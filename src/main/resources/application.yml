@@ -39,7 +39,7 @@ management:
 
 # DynamoDB Configuration
 dynamodb:
-  table-name: ${DYNAMODB_TABLE_NAME:payments}
+  table-name: ${AWS_DYNAMODB_TABLE_NAME:payments}
 
 aws:
   region: ${AWS_REGION:us-east-2}

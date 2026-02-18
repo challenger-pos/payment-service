@@ -10,6 +10,7 @@ resource "kubernetes_config_map" "billing" {
     
     # DynamoDB
     AWS_DYNAMODB_TABLE_NAME = data.terraform_remote_state.dynamodb_billing.outputs.table_name
+    AWS_DYNAMODB_ENDPOINT   = ""  # Vazio = usa AWS real (não local)
     
     # AWS Region
     AWS_REGION = var.region

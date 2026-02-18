@@ -17,7 +17,7 @@ spring:
 aws:
   region: us-east-2
   dynamodb:
-    endpoint: ${AWS_DYNAMODB_ENDPOINT:http://dynamodb-local:8000}
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:}  # Vazio = usa AWS real (não local)
   access:
     key: ${AWS_ACCESS_KEY:test-key}
   secret:

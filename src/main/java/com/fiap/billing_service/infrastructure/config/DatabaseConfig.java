@@ -23,7 +23,7 @@ import java.net.URI;
 @Configuration
 public class DatabaseConfig {
 
-  @Value("${aws.region:us-east-1}")
+  @Value("${aws.region:us-east-2}")
   private String awsRegion;
 
   @Value("${aws.dynamodb.endpoint:#{null}}")
