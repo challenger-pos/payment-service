@@ -105,6 +105,8 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+secret.tfvars
+terraform.tfvars
 
 # SSH Keys and Certificates (CRITICAL)
 *.pem
