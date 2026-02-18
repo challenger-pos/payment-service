@@ -20,6 +20,26 @@ services:
     volumes:
       - dynamodb_data:/home/dynamodblocal/data
 
+  # DynamoDB Local initialization service
+  dynamodb-init:
+    image: amazon/aws-cli:latest
+    container_name: billing-service-dynamodb-init
+    depends_on:
+      dynamodb-local:
+        condition: service_healthy
+    environment:
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:-test-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:-test-secret}
+      DYNAMODB_TABLE_NAME: ${DYNAMODB_TABLE_NAME:-payments-dev}
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+    networks:
+      - billing-network
+    volumes:
+      - ./init-scripts/02-dynamodb-init.sh:/init/02-dynamodb-init.sh:ro
+    entrypoint: /bin/bash
+    command: /init/02-dynamodb-init.sh
+
   # Billing Service Application
   billing-service:
     build:
@@ -30,6 +50,8 @@ services:
     depends_on:
       dynamodb-local:
         condition: service_healthy
+      dynamodb-init:
+        condition: service_completed_successfully
     environment:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-development}
@@ -82,8 +104,6 @@ networks:
 
 volumes:
   dynamodb_data:
-    driver: local
-  app_logs:
     driver: local
   app_logs:
     driver: local

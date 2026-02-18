@@ -9,65 +9,51 @@ import java.util.UUID;
  * PaymentEntity - Represents a payment record in DynamoDB.
  * 
  * Partition Key: workOrderId (provides uniqueness and distribution across partitions)
- * Sort Key: createdAt (timestamp for ordering and range queries)
+ * Sort Key: createdAtEpoch (timestamp for ordering and range queries)
  */
 @DynamoDbBean
 public class PaymentEntity {
 
   // Unique identifier for the payment
-  @DynamoDbAttribute("id")
   private UUID id;
 
   // Budget reference (logical reference to another service)
-  @DynamoDbAttribute("budgetId")
   private UUID budgetId;
 
   // Partition Key: Work order ID (ensures uniqueness and enables efficient queries)
-  @DynamoDbPartitionKey
   private UUID workOrderId;
 
   // Sort Key: Creation timestamp (enables range queries and temporal ordering)
-  @DynamoDbSortKey
   private Long createdAtEpoch; // Stored as epoch milliseconds for DynamoDB compatibility
 
   // Client reference (logical reference to another service)
-  @DynamoDbAttribute("clientId")
   private UUID clientId;
 
   // Payment amount in currency (e.g., BRL)
-  @DynamoDbAttribute("amount")
   private BigDecimal amount;
 
   // Payment status: PENDING, PROCESSING, APPROVED, REJECTED, FAILED
-  @DynamoDbAttribute("status")
   private String status;
 
   // Mercado Pago external payment ID (for lookups via GSI)
-  @DynamoDbAttribute("externalPaymentId")
   private String externalPaymentId;
 
   // Internal payment order ID
-  @DynamoDbAttribute("orderPaymentId")
   private String orderPaymentId;
 
   // Payment method (default: pix)
-  @DynamoDbAttribute("paymentMethod")
   private String paymentMethod = "pix";
 
   // QR code string representation
-  @DynamoDbAttribute("qrCode")
   private String qrCode;
 
   // QR code in Base64 format (for direct rendering)
-  @DynamoDbAttribute("qrCodeBase64")
   private String qrCodeBase64;
 
   // Timestamp when payment was processed
-  @DynamoDbAttribute("processedAt")
   private Long processedAtEpoch; // Stored as epoch milliseconds
 
   // Error message if payment failed
-  @DynamoDbAttribute("errorMessage")
   private String errorMessage;
 
   // Transient fields for convenience (not stored in DynamoDB)
@@ -77,6 +63,8 @@ public class PaymentEntity {
   public PaymentEntity() {}
 
   // Getters and Setters
+
+  @DynamoDbAttribute("id")
   public UUID getId() {
     return id;
   }
@@ -85,6 +73,7 @@ public class PaymentEntity {
     this.id = id;
   }
 
+  @DynamoDbAttribute("budgetId")
   public UUID getBudgetId() {
     return budgetId;
   }
@@ -94,6 +83,7 @@ public class PaymentEntity {
   }
 
   @DynamoDbPartitionKey
+  @DynamoDbAttribute("workOrderId")
   public UUID getWorkOrderId() {
     return workOrderId;
   }
@@ -102,6 +92,23 @@ public class PaymentEntity {
     this.workOrderId = workOrderId;
   }
 
+  @DynamoDbAttribute("createdAtEpoch")
+  public Long getCreatedAtEpoch() {
+    return createdAtEpoch;
+  }
+
+  public void setCreatedAtEpoch(Long createdAtEpoch) {
+    this.createdAtEpoch = createdAtEpoch;
+    // Auto-convert from epoch milliseconds for convenience
+    if (createdAtEpoch != null) {
+      this.createdAt = java.time.LocalDateTime.ofInstant(
+          java.time.Instant.ofEpochMilli(createdAtEpoch),
+          java.time.ZoneId.systemDefault()
+      );
+    }
+  }
+
+  @DynamoDbAttribute("clientId")
   public UUID getClientId() {
     return clientId;
   }
@@ -110,6 +117,7 @@ public class PaymentEntity {
     this.clientId = clientId;
   }
 
+  @DynamoDbAttribute("amount")
   public BigDecimal getAmount() {
     return amount;
   }
@@ -118,6 +126,7 @@ public class PaymentEntity {
     this.amount = amount;
   }
 
+  @DynamoDbAttribute("status")
   public String getStatus() {
     return status;
   }
@@ -126,6 +135,7 @@ public class PaymentEntity {
     this.status = status;
   }
 
+  @DynamoDbAttribute("externalPaymentId")
   public String getExternalPaymentId() {
     return externalPaymentId;
   }
@@ -134,12 +144,65 @@ public class PaymentEntity {
     this.externalPaymentId = externalPaymentId;
   }
 
+  @DynamoDbAttribute("orderPaymentId")
+  public String getOrderPaymentId() {
+    return orderPaymentId;
+  }
+
+  public void setOrderPaymentId(String orderPaymentId) {
+    this.orderPaymentId = orderPaymentId;
+  }
+
+  @DynamoDbAttribute("paymentMethod")
   public String getPaymentMethod() {
     return paymentMethod;
   }
 
   public void setPaymentMethod(String paymentMethod) {
     this.paymentMethod = paymentMethod;
+  }
+
+  @DynamoDbAttribute("qrCode")
+  public String getQrCode() {
+    return qrCode;
+  }
+
+  public void setQrCode(String qrCode) {
+    this.qrCode = qrCode;
+  }
+
+  @DynamoDbAttribute("qrCodeBase64")
+  public String getQrCodeBase64() {
+    return qrCodeBase64;
+  }
+
+  public void setQrCodeBase64(String qrCodeBase64) {
+    this.qrCodeBase64 = qrCodeBase64;
+  }
+
+  @DynamoDbAttribute("processedAtEpoch")
+  public Long getProcessedAtEpoch() {
+    return processedAtEpoch;
+  }
+
+  public void setProcessedAtEpoch(Long processedAtEpoch) {
+    this.processedAtEpoch = processedAtEpoch;
+    // Auto-convert from epoch milliseconds for convenience
+    if (processedAtEpoch != null) {
+      this.processedAt = java.time.LocalDateTime.ofInstant(
+          java.time.Instant.ofEpochMilli(processedAtEpoch),
+          java.time.ZoneId.systemDefault()
+      );
+    }
+  }
+
+  @DynamoDbAttribute("errorMessage")
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
   }
 
   public LocalDateTime getCreatedAt() {
@@ -167,70 +230,6 @@ public class PaymentEntity {
       this.processedAtEpoch = java.time.Instant.from(
           processedAt.atZone(java.time.ZoneId.systemDefault())
       ).toEpochMilli();
-    }
-  }
-
-  public String getErrorMessage() {
-    return errorMessage;
-  }
-
-  public void setErrorMessage(String errorMessage) {
-    this.errorMessage = errorMessage;
-  }
-
-  public String getQrCode() {
-    return qrCode;
-  }
-
-  public void setQrCode(String qrCode) {
-    this.qrCode = qrCode;
-  }
-
-  public String getQrCodeBase64() {
-    return qrCodeBase64;
-  }
-
-  public void setQrCodeBase64(String qrCodeBase64) {
-    this.qrCodeBase64 = qrCodeBase64;
-  }
-
-  public String getOrderPaymentId() {
-    return orderPaymentId;
-  }
-
-  public void setOrderPaymentId(String orderPaymentId) {
-    this.orderPaymentId = orderPaymentId;
-  }
-
-  // DynamoDB-specific getters/setters
-  @DynamoDbSortKey
-  public Long getCreatedAtEpoch() {
-    return createdAtEpoch;
-  }
-
-  public void setCreatedAtEpoch(Long createdAtEpoch) {
-    this.createdAtEpoch = createdAtEpoch;
-    // Auto-convert from epoch milliseconds for convenience
-    if (createdAtEpoch != null) {
-      this.createdAt = java.time.LocalDateTime.ofInstant(
-          java.time.Instant.ofEpochMilli(createdAtEpoch),
-          java.time.ZoneId.systemDefault()
-      );
-    }
-  }
-
-  public Long getProcessedAtEpoch() {
-    return processedAtEpoch;
-  }
-
-  public void setProcessedAtEpoch(Long processedAtEpoch) {
-    this.processedAtEpoch = processedAtEpoch;
-    // Auto-convert from epoch milliseconds for convenience
-    if (processedAtEpoch != null) {
-      this.processedAt = java.time.LocalDateTime.ofInstant(
-          java.time.Instant.ofEpochMilli(processedAtEpoch),
-          java.time.ZoneId.systemDefault()
-      );
     }
   }
 }

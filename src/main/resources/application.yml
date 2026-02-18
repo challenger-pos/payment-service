@@ -42,9 +42,10 @@ dynamodb:
   table-name: ${DYNAMODB_TABLE_NAME:payments}
 
 aws:
-  region: ${AWS_REGION:us-east-1}
+  region: ${AWS_REGION:us-east-2}
   dynamodb:
     endpoint: ${AWS_DYNAMODB_ENDPOINT:}
   access:
     key: ${AWS_ACCESS_KEY:}
-    secret: ${AWS_SECRET_KEY:}
+  secret:
+    key: ${AWS_SECRET_KEY:}

@@ -20,12 +20,13 @@ spring:
 
 # AWS Configuration for Production
 aws:
-  region: us-east-1
+  region: us-east-2
   dynamodb:
     endpoint: "" # Uses AWS managed endpoint (no override)
-  credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+  access:
+    key: ${AWS_ACCESS_KEY}
+  secret:
+    key: ${AWS_SECRET_KEY}
   sqs:
     payment-request-queue: payment-request-queue
     payment-request-dlq: payment-request-dlq

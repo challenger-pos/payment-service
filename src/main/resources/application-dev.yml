@@ -16,9 +16,12 @@ spring:
 # AWS Configuration
 aws:
   region: us-east-2
-  credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+  dynamodb:
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:http://dynamodb-local:8000}
+  access:
+    key: ${AWS_ACCESS_KEY:test-key}
+  secret:
+    key: ${AWS_SECRET_KEY:test-secret}
   sqs:
     payment-request-queue: payment-request-queue
     payment-response-success-queue: payment-response-success-queue

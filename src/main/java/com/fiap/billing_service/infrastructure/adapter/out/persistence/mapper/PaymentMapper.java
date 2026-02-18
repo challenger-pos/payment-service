@@ -21,7 +21,15 @@ public class PaymentMapper {
     entity.setPaymentMethod(payment.getPaymentMethod());
     entity.setQrCode(payment.getQrCode());
     entity.setQrCodeBase64(payment.getQrCodeBase64());
-    entity.setCreatedAt(payment.getCreatedAt());
+    
+    // Ensure createdAt is set (required for DynamoDB sort key)
+    if (payment.getCreatedAt() != null) {
+      entity.setCreatedAt(payment.getCreatedAt());
+    } else {
+      // Default to now if not set
+      entity.setCreatedAt(java.time.LocalDateTime.now());
+    }
+    
     entity.setProcessedAt(payment.getProcessedAt());
     entity.setErrorMessage(payment.getErrorMessage());
     return entity;

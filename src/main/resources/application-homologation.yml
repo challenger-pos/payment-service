@@ -4,20 +4,6 @@ spring:
     activate:
       on-profile: homologation
 
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate # Let Flyway manage schema; Hibernate validates against migrations
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
   cloud:
     aws:
       region:
@@ -29,24 +15,47 @@ spring:
         auto: false
       sqs:
         listener:
-          # Use ON_SUCCESS acknowledgment mode for idempotency
           acknowledgement-mode: on-success
-          # 5 minutes visibility timeout (enough for Mercado Pago API calls + processing)
           visibility-timeout: 300
 
-  # AWS Configuration (dummy values for local development)
-  aws:
-    region: us-east-2
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    sqs:
-      payment-request-queue: payment-request-queue
-      payment-request-dlq: payment-request-dlq # Dead Letter Queue for failed messages
-      payment-response-success-queue: payment-response-success-queue
-      payment-response-failure-queue: payment-response-failure-queue
-      auto-create-queue: true # Automatically create queue if it doesn't exist
-      max-receive-count: 3 # Move to DLQ after 3 failed attempts
+# AWS Configuration for Homologation
+aws:
+  region: us-east-2
+  dynamodb:
+    endpoint: "" # Uses AWS managed endpoint (no override)
+  access:
+    key: ${AWS_ACCESS_KEY}
+  secret:
+    key: ${AWS_SECRET_KEY}
+  sqs:
+    payment-request-queue: payment-request-queue
+    payment-request-dlq: payment-request-dlq
+    payment-response-success-queue: payment-response-success-queue
+    payment-response-failure-queue: payment-response-failure-queue
+    auto-create-queue: false
+    max-receive-count: 3
+
+# DynamoDB Configuration for Homologation
+dynamodb:
+  table-name: ${DYNAMODB_TABLE_NAME:payments-homolog}
+
+# Mercado Pago Configuration
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+
+# Actuator Configuration for Homologation
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
+logging:
+  level:
+    com.fiap.billing_service: INFO
+    org.springframework.cloud.aws: INFO
+    software.amazon.awssdk: INFO
 
   # Mercado Pago Configuration (dummy values for local development)
   mercadopago:

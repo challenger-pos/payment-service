@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 import java.util.Optional;
@@ -89,36 +89,33 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
   /**
    * Find a payment by work order ID.
    * 
-   * Since workOrderId is the partition key of the DynamoDB table,
-   * this is a direct key lookup which is very efficient.
-   * 
-   * Note: The sort key (createdAt) is not needed for this lookup since
-   * workOrderId is unique per the business requirements.
+   * Since workOrderId is the partition key (and is unique by business design),
+   * we use getItem() with a direct key lookup - O(1) and most efficient.
    * 
    * @param workOrderId The work order ID (partition key)
    * @return Optional containing the payment if found, empty otherwise
-   * @throws DynamoDbException if the query fails
    */
   @Override
   public Optional<Payment> findByWorkOrderId(UUID workOrderId) {
     try {
-      logger.debug("Finding payment with workOrderId: {} from DynamoDB table: {}", 
+      logger.debug("Finding payment with workOrderId: {} from DynamoDB table: {}",
                    workOrderId, tableName);
-      
+
       DynamoDbTable<PaymentEntity> table = getPaymentTable();
-      
-      // Query using partition key. UUID must be converted to String
-      PaymentEntity entity = table.getItem(r -> r.key(k -> k
+
+      Key key = Key.builder()
           .partitionValue(workOrderId.toString())
-      ));
-      
+          .build();
+
+      PaymentEntity entity = table.getItem(key);
+
       if (entity != null) {
         logger.debug("Payment found with workOrderId: {}", workOrderId);
         return Optional.of(mapper.toDomain(entity));
-      } else {
-        logger.debug("Payment not found with workOrderId: {}", workOrderId);
-        return Optional.empty();
       }
+
+      logger.debug("Payment not found with workOrderId: {}", workOrderId);
+      return Optional.empty();
     } catch (DynamoDbException e) {
       logger.error("Error finding payment with workOrderId: {} - Error: {}",
                    workOrderId, e.getMessage(), e);
@@ -155,19 +152,28 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
   /**
    * Delete a payment from DynamoDB by work order ID.
    * 
+   * workOrderId is the sole partition key, so deleteItem uses a direct key lookup.
+   * 
    * @param workOrderId The work order ID (partition key)
    * @throws DynamoDbException if the delete operation fails
    */
   public void deleteByWorkOrderId(UUID workOrderId) {
     try {
       logger.debug("Deleting payment with workOrderId: {}", workOrderId);
-      
+
       DynamoDbTable<PaymentEntity> table = getPaymentTable();
-      table.deleteItem(r -> r.key(k -> k
+
+      Key key = Key.builder()
           .partitionValue(workOrderId.toString())
-      ));
-      
-      logger.debug("Payment deleted successfully with workOrderId: {}", workOrderId);
+          .build();
+
+      PaymentEntity deleted = table.deleteItem(key);
+
+      if (deleted != null) {
+        logger.debug("Payment deleted successfully with workOrderId: {}", workOrderId);
+      } else {
+        logger.debug("No payment found to delete with workOrderId: {}", workOrderId);
+      }
     } catch (DynamoDbException e) {
       logger.error("Error deleting payment with workOrderId: {} - Error: {}",
                    workOrderId, e.getMessage(), e);
