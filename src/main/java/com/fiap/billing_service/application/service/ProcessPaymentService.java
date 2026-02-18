@@ -13,12 +13,10 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 @Service
-@Transactional
 public class ProcessPaymentService implements ProcessPaymentUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(ProcessPaymentService.class);
@@ -71,22 +69,22 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
             paymentRequest.getClientId(),
             new BigDecimal(paymentRequest.getOrderRequest().getTotalAmount()));
 
-    // Save initial payment (constraint violation check - second line of defense)
+    // Save initial payment (DynamoDB constraint validation - first persistence check)
     try {
       payment = paymentRepository.save(payment);
       log.info(
           "Payment created successfully: paymentId={}, workOrderId={}", payment.getId(), workOrderId);
-    } catch (DataIntegrityViolationException e) {
-      // Race condition: another instance created payment between our check and save
+    } catch (DynamoDbException e) {
+      // Race condition or constraint violation
       log.info(
-          "Concurrent duplicate detected by database constraint for workOrderId: {}. Fetching existing payment.",
+          "Concurrent duplicate or constraint violation detected for workOrderId: {}. Fetching existing payment.",
           workOrderId);
       return paymentRepository
           .findByWorkOrderId(workOrderId)
           .orElseThrow(
               () ->
                   new PaymentProcessingException(
-                      "Payment constraint violation but payment not found for workOrderId: "
+                      "Payment saving failed but payment not found for workOrderId: "
                           + workOrderId));
     }
 

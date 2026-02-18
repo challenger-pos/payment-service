@@ -4,21 +4,6 @@ spring:
     activate:
       on-profile: development
 
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate # Let Flyway manage schema; Hibernate validates against migrations
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-
   cloud:
     aws:
       region:
@@ -30,24 +15,28 @@ spring:
         auto: false
       sqs:
         listener:
-          # Use ON_SUCCESS acknowledgment mode for idempotency
           acknowledgement-mode: on-success
-          # 5 minutes visibility timeout (enough for Mercado Pago API calls + processing)
           visibility-timeout: 300
 
-# AWS Configuration (dummy values for local development)
+# AWS Configuration for Development
 aws:
   region: us-east-2
+  dynamodb:
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:http://dynamodb-local:8000}
   credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+    access-key: ${AWS_ACCESS_KEY:test-key}
+    secret-key: ${AWS_SECRET_KEY:test-secret}
   sqs:
     payment-request-queue: ${PAYMENT_REQUEST_QUEUE}
-    payment-request-dlq: ${PAYMENT_REQUEST_DLQ} # Dead Letter Queue for failed messages
+    payment-request-dlq: ${PAYMENT_REQUEST_DLQ}
     payment-response-success-queue: ${PAYMENT_RESPONSE_SUCCESS_QUEUE}
     payment-response-failure-queue: ${PAYMENT_RESPONSE_FAILURE_QUEUE}
-    auto-create-queue: true # Automatically create queue if it doesn't exist
-    max-receive-count: 3 # Move to DLQ after 3 failed attempts
+    auto-create-queue: true
+    max-receive-count: 3
+
+# DynamoDB Configuration for Development
+dynamodb:
+  table-name: ${DYNAMODB_TABLE_NAME:payments-dev}
 
 # Mercado Pago Configuration (dummy values for local development)
 mercadopago:

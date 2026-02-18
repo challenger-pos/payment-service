@@ -74,9 +74,9 @@ The Billing Service handles payment processing for order payments using:
 - **Hexagonal Architecture** (Ports & Adapters pattern) for clean separation of concerns
 - **Queue-based asynchronous processing** via AWS SQS
 - **Mercado Pago PIX integration** for secure payment processing
-- **Idempotency guarantees** (application + database + constraints)
+- **Idempotency guarantees** (application-level + DynamoDB constraints)
 - **Dead Letter Queues** for handling failed payment attempts
-- **PostgreSQL 17** for persistent storage
+- **Amazon DynamoDB** for NoSQL persistent storage (pay-per-request capacity mode)
 
 ### Key Responsibilities
 
@@ -151,7 +151,7 @@ billing-service/
 │       │           └── PaymentRepositoryAdapter.java
 │       └── config/
 │           ├── AwsConfig.java
-│           ├── DatabaseConfig.java
+│           ├── DatabaseConfig.java          # DynamoDB configuration
 │           ├── JacksonConfig.java
 │           └── WebConfig.java
 │
@@ -159,9 +159,7 @@ billing-service/
     ├── application.yml
     ├── application-development.yml
     ├── application-homologation.yml
-    ├── application-production.yml
-    └── db/migration/                    # Flyway migrations
-        └── V1__init_payments_table.sql
+    └── application-production.yml
 ```
 
 ### Ports & Adapters Pattern
@@ -172,8 +170,8 @@ billing-service/
 | **PaymentQueueListener**       | Input Adapter  | Listens to SQS queue for requests   |
 | **PaymentGatewayPort**         | Output Port    | Abstracts payment gateway           |
 | **MercadoPagoAdapter**         | Output Adapter | Implements Mercado Pago integration |
-| **PaymentRepositoryPort**      | Output Port    | Abstracts database persistence      |
-| **PaymentRepositoryAdapter**   | Output Adapter | Implements JPA-based persistence    |
+| **PaymentRepositoryPort**      | Output Port    | Abstracts DynamoDB persistence      |
+| **PaymentRepositoryAdapter**   | Output Adapter | Implements DynamoDB operations      |
 | **PaymentResponseMessagePort** | Output Port    | Abstracts response messaging        |
 | **SqsMessageSender**           | Output Adapter | Implements SQS messaging            |
 
@@ -189,31 +187,29 @@ billing-service/
 
 ## Technology Stack
 
-| Component        | Version | Purpose                    |
-| ---------------- | ------- | -------------------------- |
-| Java             | 21      | Language                   |
-| Spring Boot      | 4.0.2   | Web framework              |
-| Spring Data JPA  | -       | ORM & database abstraction |
-| Spring Cloud AWS | 4.0.0   | AWS SQS integration        |
-| PostgreSQL       | 17      | Production database        |
-| H2 Database      | -       | Development/testing        |
-| Mercado Pago SDK | 2.1.4   | Payment gateway            |
-| Maven            | 3.9+    | Build tool                 |
-| Docker           | 20.10+  | Containerization           |
-| Docker Compose   | 2.0+    | Container orchestration    |
-| Flyway           | -       | Database migration         |
+| Component        | Version | Purpose                         |
+| ---------------- | ------- | ------------------------------- |
+| Java             | 21      | Language                        |
+| Spring Boot      | 4.0.2   | Web framework                   |
+| Spring Cloud AWS | 4.0.0   | AWS integration (SQS, DynamoDB) |
+| DynamoDB         | Local   | NoSQL database (On-Demand)      |
+| AWS SDK v2       | 2.24.9  | DynamoDB Enhanced client        |
+| Mercado Pago SDK | 2.1.4   | Payment gateway                 |
+| Maven            | 3.9+    | Build tool                      |
+| Docker           | 20.10+  | Containerization                |
+| Docker Compose   | 2.0+    | Container orchestration         |
+| TestContainers   | 1.19.7  | DynamoDB testing container      |
 
 ### Key Dependencies
 
 ```xml
 <!-- Web & Data -->
 <spring-boot-starter-web>                          <!-- REST endpoints -->
-<spring-boot-starter-data-jpa>                     <!-- Database ORM -->
 <spring-boot-starter-validation>                   <!-- Bean validation -->
 
-<!-- Database -->
-<postgresql>                                       <!-- Production DB driver -->
-<h2>                                               <!-- Development/test DB -->
+<!-- AWS DynamoDB -->
+<software.amazon.awssdk:dynamodb-enhanced>         <!-- DynamoDB Enhanced Client -->
+<software.amazon.awssdk:dynamodb>                  <!-- DynamoDB Core -->
 
 <!-- AWS Integration -->
 <spring-cloud-aws-starter-sqs>                     <!-- SQS messaging -->
@@ -228,6 +224,8 @@ billing-service/
 
 <!-- Testing -->
 <spring-boot-starter-test>                         <!-- Unit & integration tests -->
+<testcontainers>1.19.7</testcontainers>           <!-- DynamoDB Local for tests -->
+<testcontainers-dynamodb>1.19.7</testcontainers>  <!-- DynamoDB container -->
 ```
 
 ---
@@ -238,7 +236,7 @@ billing-service/
 
 - Docker & Docker Compose installed
 - `.env` file with credentials (copy from `.env.example`)
-- Ports 8080, 5433, 5050 available
+- Ports 8080, 8000 (DynamoDB Local) available
 
 ### Option 1: Quick Start Script (Recommended)
 
@@ -252,14 +250,13 @@ chmod +x start.sh
 
 **Menu options:**
 
-1. Start full stack (App + Database)
-2. Start database only (for local development)
-3. Start with PgAdmin (for DB management)
+1. Start full stack (App + DynamoDB Local)
+2. Start DynamoDB Local only (for local development)
+3. View logs in real-time
 4. Stop all services
-5. View logs in real-time
-6. Clean everything (removes containers & volumes)
-7. Setup SQS queues (creates DLQ for development)
-8. Show help
+5. Clean everything (removes containers & volumes)
+6. Setup SQS queues (creates DLQ for development)
+7. Show help
 
 ### Option 2: Using Makefile
 
@@ -292,11 +289,8 @@ make clean
 # Full stack
 docker-compose up -d --build
 
-# Database only
-docker-compose -f docker-compose.dev.yml up -d
-
-# With PgAdmin (dev profile)
-docker-compose --profile dev up -d
+# DynamoDB Local only
+docker-compose up -d dynamodb-local
 
 # View logs
 docker-compose logs -f
@@ -314,6 +308,9 @@ docker-compose ps
 # Health check
 curl http://localhost:8080/actuator/health
 
+# Verify DynamoDB is running
+curl http://localhost:8000/
+
 # View logs
 docker-compose logs app
 ```
@@ -326,8 +323,8 @@ docker-compose logs app
 
 - **Java 21+** (for local development)
 - **Maven 3.8+** (for building)
-- **PostgreSQL 12+** (if not using Docker)
-- **AWS credentials** (for SQS access)
+- **Docker** (for DynamoDB Local - if not using AWS-managed DynamoDB)
+- **AWS credentials** (for SQS and DynamoDB access)
 - **Mercado Pago credentials**
 
 ### Environment Configuration

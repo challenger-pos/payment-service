@@ -1,51 +1,82 @@
 package com.fiap.billing_service.infrastructure.adapter.out.persistence.entity;
 
-import jakarta.persistence.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "payments")
+/**
+ * PaymentEntity - Represents a payment record in DynamoDB.
+ * 
+ * Partition Key: workOrderId (provides uniqueness and distribution across partitions)
+ * Sort Key: createdAt (timestamp for ordering and range queries)
+ */
+@DynamoDbBean
 public class PaymentEntity {
 
-  @Id private UUID id;
+  // Unique identifier for the payment
+  @DynamoDbAttribute("id")
+  private UUID id;
 
-  @Column(nullable = false)
+  // Budget reference (logical reference to another service)
+  @DynamoDbAttribute("budgetId")
   private UUID budgetId;
 
-  @Column(nullable = false, unique = true)
+  // Partition Key: Work order ID (ensures uniqueness and enables efficient queries)
+  @DynamoDbPartitionKey
   private UUID workOrderId;
 
-  @Column(nullable = false)
+  // Sort Key: Creation timestamp (enables range queries and temporal ordering)
+  @DynamoDbSortKey
+  private Long createdAtEpoch; // Stored as epoch milliseconds for DynamoDB compatibility
+
+  // Client reference (logical reference to another service)
+  @DynamoDbAttribute("clientId")
   private UUID clientId;
 
-  @Column(nullable = false, precision = 10, scale = 2)
+  // Payment amount in currency (e.g., BRL)
+  @DynamoDbAttribute("amount")
   private BigDecimal amount;
 
-  @Column(nullable = false)
+  // Payment status: PENDING, PROCESSING, APPROVED, REJECTED, FAILED
+  @DynamoDbAttribute("status")
   private String status;
 
+  // Mercado Pago external payment ID (for lookups via GSI)
+  @DynamoDbAttribute("externalPaymentId")
   private String externalPaymentId;
+
+  // Internal payment order ID
+  @DynamoDbAttribute("orderPaymentId")
   private String orderPaymentId;
+
+  // Payment method (default: pix)
+  @DynamoDbAttribute("paymentMethod")
   private String paymentMethod = "pix";
 
-  @Column(length = 2000)
+  // QR code string representation
+  @DynamoDbAttribute("qrCode")
   private String qrCode;
 
-  @Column(length = 5000)
+  // QR code in Base64 format (for direct rendering)
+  @DynamoDbAttribute("qrCodeBase64")
   private String qrCodeBase64;
 
-  @Column(nullable = false)
-  private LocalDateTime createdAt;
+  // Timestamp when payment was processed
+  @DynamoDbAttribute("processedAt")
+  private Long processedAtEpoch; // Stored as epoch milliseconds
 
-  private LocalDateTime processedAt;
-
-  @Column(length = 1000)
+  // Error message if payment failed
+  @DynamoDbAttribute("errorMessage")
   private String errorMessage;
+
+  // Transient fields for convenience (not stored in DynamoDB)
+  private LocalDateTime createdAt;
+  private LocalDateTime processedAt;
 
   public PaymentEntity() {}
 
+  // Getters and Setters
   public UUID getId() {
     return id;
   }
@@ -62,6 +93,7 @@ public class PaymentEntity {
     this.budgetId = budgetId;
   }
 
+  @DynamoDbPartitionKey
   public UUID getWorkOrderId() {
     return workOrderId;
   }
@@ -116,6 +148,12 @@ public class PaymentEntity {
 
   public void setCreatedAt(LocalDateTime createdAt) {
     this.createdAt = createdAt;
+    // Auto-convert to epoch milliseconds for DynamoDB storage
+    if (createdAt != null) {
+      this.createdAtEpoch = java.time.Instant.from(
+          createdAt.atZone(java.time.ZoneId.systemDefault())
+      ).toEpochMilli();
+    }
   }
 
   public LocalDateTime getProcessedAt() {
@@ -124,6 +162,12 @@ public class PaymentEntity {
 
   public void setProcessedAt(LocalDateTime processedAt) {
     this.processedAt = processedAt;
+    // Auto-convert to epoch milliseconds for DynamoDB storage
+    if (processedAt != null) {
+      this.processedAtEpoch = java.time.Instant.from(
+          processedAt.atZone(java.time.ZoneId.systemDefault())
+      ).toEpochMilli();
+    }
   }
 
   public String getErrorMessage() {
@@ -156,5 +200,37 @@ public class PaymentEntity {
 
   public void setOrderPaymentId(String orderPaymentId) {
     this.orderPaymentId = orderPaymentId;
+  }
+
+  // DynamoDB-specific getters/setters
+  @DynamoDbSortKey
+  public Long getCreatedAtEpoch() {
+    return createdAtEpoch;
+  }
+
+  public void setCreatedAtEpoch(Long createdAtEpoch) {
+    this.createdAtEpoch = createdAtEpoch;
+    // Auto-convert from epoch milliseconds for convenience
+    if (createdAtEpoch != null) {
+      this.createdAt = java.time.LocalDateTime.ofInstant(
+          java.time.Instant.ofEpochMilli(createdAtEpoch),
+          java.time.ZoneId.systemDefault()
+      );
+    }
+  }
+
+  public Long getProcessedAtEpoch() {
+    return processedAtEpoch;
+  }
+
+  public void setProcessedAtEpoch(Long processedAtEpoch) {
+    this.processedAtEpoch = processedAtEpoch;
+    // Auto-convert from epoch milliseconds for convenience
+    if (processedAtEpoch != null) {
+      this.processedAt = java.time.LocalDateTime.ofInstant(
+          java.time.Instant.ofEpochMilli(processedAtEpoch),
+          java.time.ZoneId.systemDefault()
+      );
+    }
   }
 }

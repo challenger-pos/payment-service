@@ -2,21 +2,6 @@ spring:
   application:
     name: billing-service
 
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-
-  h2:
-    console:
-      enabled: true
-
   cloud:
     aws:
       region:
@@ -32,6 +17,8 @@ spring:
 # Test configurations
 aws:
   region: us-east-2
+  dynamodb:
+    endpoint: http://localhost:8000
   credentials:
     access-key: test-key
     secret-key: test-secret
@@ -43,9 +30,6 @@ aws:
     auto-create-queue: false
     max-receive-count: 3
 
-mercadopago:
-  access-token: test-token
-  public-key: test-public-key
-
-server:
-  port: 0
+# DynamoDB Configuration for Tests
+dynamodb:
+  table-name: payments-test
