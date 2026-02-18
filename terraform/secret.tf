@@ -5,10 +5,7 @@ resource "kubernetes_secret" "billing" {
   }
 
   data = {
-    # Database
-    SPRING_DATASOURCE_PASSWORD = var.db_password
-    
-    # AWS Credentials
+    # AWS Credentials (para DynamoDB access)
     AWS_ACCESS_KEY = var.aws_access_key
     AWS_SECRET_KEY = var.aws_secret_key
     
