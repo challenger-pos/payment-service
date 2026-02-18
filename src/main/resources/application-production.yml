@@ -54,8 +54,18 @@ mercadopago:
   access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
   public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
 
+# Actuator Configuration for Production (minimal exposure)
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+
 logging:
   level:
-    com.fiap.billing_service: DEBUG
-    com.icegreen.greenmail: DEBUG
-    org.springframework.mail: DEBUG
+    com.fiap.billing_service: INFO
+    com.icegreen.greenmail: WARN
+    org.springframework.mail: WARN

@@ -5,9 +5,9 @@ spring:
       on-profile: development
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/billing_db
-    username: postgres
-    password: postgres123
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -42,17 +42,23 @@ aws:
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
   sqs:
-    payment-request-queue: payment-request-queue
-    payment-request-dlq: payment-request-dlq # Dead Letter Queue for failed messages
-    payment-response-success-queue: payment-response-success-queue
-    payment-response-failure-queue: payment-response-failure-queue
+    payment-request-queue: ${PAYMENT_REQUEST_QUEUE}
+    payment-request-dlq: ${PAYMENT_REQUEST_DLQ} # Dead Letter Queue for failed messages
+    payment-response-success-queue: ${PAYMENT_RESPONSE_SUCCESS_QUEUE}
+    payment-response-failure-queue: ${PAYMENT_RESPONSE_FAILURE_QUEUE}
     auto-create-queue: true # Automatically create queue if it doesn't exist
     max-receive-count: 3 # Move to DLQ after 3 failed attempts
 
 # Mercado Pago Configuration (dummy values for local development)
 mercadopago:
-  access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
-  public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+
+# Actuator Configuration for Development
+management:
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
