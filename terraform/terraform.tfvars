@@ -8,10 +8,9 @@ app_replicas = 1  # Reduzido para dev
 app_image    = "thiagotierre/billing-service:latest"
 app_port     = 8080
 
-# Variáveis sensíveis devem ser passadas via -var ou variáveis de ambiente:
-# - db_password
-# - aws_access_key
-# - aws_secret_key
+# Variáveis sensíveis devem ser passadas via -var ou variáveis de ambiente (secret.tfvars):
+# - aws_access_key (para DynamoDB e SQS)
+# - aws_secret_key (para DynamoDB e SQS)
 # - mercadopago_access_token
 
 # Mercado Pago (public key não é sensível)

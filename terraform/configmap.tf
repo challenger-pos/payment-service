@@ -8,9 +8,8 @@ resource "kubernetes_config_map" "billing" {
     SPRING_PROFILES_ACTIVE = var.environment
     SERVER_PORT            = tostring(var.app_port)
     
-    # Database
-    SPRING_DATASOURCE_URL = "jdbc:postgresql://${data.terraform_remote_state.rds_billing.outputs.rds_endpoint_host}:${data.terraform_remote_state.rds_billing.outputs.rds_port}/${data.terraform_remote_state.rds_billing.outputs.db_name}"
-    SPRING_DATASOURCE_USERNAME = data.terraform_remote_state.rds_billing.outputs.db_username
+    # DynamoDB
+    AWS_DYNAMODB_TABLE_NAME = data.terraform_remote_state.dynamodb_billing.outputs.table_name
     
     # AWS Region
     AWS_REGION = var.region

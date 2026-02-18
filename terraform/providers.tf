@@ -43,11 +43,11 @@ data "terraform_remote_state" "eks" {
   }
 }
 
-data "terraform_remote_state" "rds_billing" {
+data "terraform_remote_state" "dynamodb_billing" {
   backend = "s3"
   config = {
     bucket = "tf-state-challenge-bucket"
-    key    = "v4/rds-billing/dev/terraform.tfstate"
+    key    = "v4/dynamodb-billing/dev/terraform.tfstate"
     region = "us-east-2"
   }
 }
