@@ -148,8 +148,8 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx2048m
           AWS_REGION: us-east-2
-          AWS_ACCESS_KEY_ID: test-key
-          AWS_SECRET_ACCESS_KEY: test-secret
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
 
       - name: Run integration tests
@@ -159,8 +159,8 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx2048m
           AWS_REGION: us-east-2
-          AWS_ACCESS_KEY_ID: test-key
-          AWS_SECRET_ACCESS_KEY: test-secret
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
         continue-on-error: true
 
