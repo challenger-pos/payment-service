@@ -20,7 +20,7 @@ on:
         type: choice
         options:
           - ''
-          - development
+          - dev
           - homologation
           - production
 
@@ -29,6 +29,8 @@ env:
   IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/billing-service
   JAVA_VERSION: '21'
   MAVEN_VERSION: '3.9.9'
+  KUBERNETES_NAMESPACE: challengeone-billing
+  AWS_REGION: us-east-2
 
 jobs:
   # ============================================================================
@@ -288,8 +290,8 @@ jobs:
     needs: [ quality-check, docker-build, security-scan ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
-      name: development
-      url: https://billing-dev.example.com
+      name: dev
+      url: https://billing-dev.challengeone.com
     permissions:
       contents: read
       id-token: write
@@ -302,48 +304,66 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: github-actions-billing-service
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-billing-dev
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.0
+          terraform_wrapper: false
+
+      - name: Update backend configuration for dev
+        run: |
+          cd terraform
+          cat > backend.tf <<EOF
+          terraform {
+            backend "s3" {
+              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
+              key    = "v4/service-billing/dev/terraform.tfstate"
+              region = "${{ env.AWS_REGION }}"
+            }
+          }
+          EOF
 
       - name: Terraform Init
         run: |
           cd terraform
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_BACKEND_BUCKET }}" \
-            -backend-config="key=billing-service/development/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init -reconfigure
 
       - name: Terraform Plan
         run: |
           cd terraform
           terraform plan \
-            -var="environment=development" \
-            -var="image_tag=${{ github.sha }}" \
-            -var="image_repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" \
+            -var-file=terraform.tfvars.dev \
+            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
             -out=tfplan
-        env:
-          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Apply
         run: |
           cd terraform
           terraform apply -auto-approve tfplan
 
-      - name: Get kubeconfig
+      - name: Get EKS cluster name from remote state
+        id: eks-cluster
+        run: |
+          cd terraform
+          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-dev")
+          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name billing-service-dev \
-            --region ${{ secrets.AWS_REGION }}
+            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
+            --region ${{ env.AWS_REGION }}
 
       - name: Wait for deployment rollout
         run: |
           kubectl rollout status deployment/billing-service \
-            -n billing-development \
+            -n ${{ env.KUBERNETES_NAMESPACE }} \
             --timeout=5m
         continue-on-error: true
 
@@ -352,12 +372,12 @@ jobs:
           COUNTER=0
           MAX_ATTEMPTS=30
           while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n billing-development \
-              -l app=billing-service \
+            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
+              -l app=billing \
               -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
             
             if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n billing-development $POD -- \
+              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
                 wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
               if [ ! -z "$HEALTH" ]; then
                 echo "✅ Development deployment is healthy"
@@ -374,6 +394,19 @@ jobs:
           exit 1
         continue-on-error: true
 
+      - name: Display deployment info
+        if: always()
+        run: |
+          echo "======================================"
+          echo "📦 Deployment Information - DEV"
+          echo "======================================"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo "======================================"
+          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
+          echo "======================================"
+
   # ============================================================================
   # STAGE 7: DEPLOY TO HOMOLOGATION (After Dev)
   # ============================================================================
@@ -384,7 +417,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: homologation
-      url: https://billing-homolog.example.com
+      url: https://billing-homolog.challengeone.com
     permissions:
       contents: read
       id-token: write
@@ -400,54 +433,108 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: github-actions-billing-service
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-billing-homolog
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.0
+          terraform_wrapper: false
+
+      - name: Update backend configuration for homologation
+        run: |
+          cd terraform
+          cat > backend.tf <<EOF
+          terraform {
+            backend "s3" {
+              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
+              key    = "v4/service-billing/homologation/terraform.tfstate"
+              region = "${{ env.AWS_REGION }}"
+            }
+          }
+          EOF
 
       - name: Terraform Init
         run: |
           cd terraform
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_BACKEND_BUCKET }}" \
-            -backend-config="key=billing-service/homologation/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init -reconfigure
 
       - name: Terraform Plan
         run: |
           cd terraform
           terraform plan \
-            -var="environment=homologation" \
-            -var="image_tag=${{ github.sha }}" \
-            -var="image_repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" \
+            -var-file=terraform.tfvars.homologation \
+            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
             -out=tfplan
-        env:
-          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Apply
         run: |
           cd terraform
           terraform apply -auto-approve tfplan
 
-      - name: Get kubeconfig
+      - name: Get EKS cluster name from remote state
+        id: eks-cluster
+        run: |
+          cd terraform
+          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-homologation")
+          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name billing-service-homolog \
-            --region ${{ secrets.AWS_REGION }}
+            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
+            --region ${{ env.AWS_REGION }}
 
       - name: Wait for deployment rollout
         run: |
           kubectl rollout status deployment/billing-service \
-            -n billing-homologation \
+            -n ${{ env.KUBERNETES_NAMESPACE }} \
             --timeout=5m
         continue-on-error: true
 
       - name: Health check - Homologation
         run: |
           COUNTER=0
+          MAX_ATTEMPTS=60
+          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
+            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
+              -l app=billing \
+              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+            
+            if [ ! -z "$POD" ]; then
+              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
+                wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
+              if [ ! -z "$HEALTH" ]; then
+                echo "✅ Homologation deployment is healthy"
+                exit 0
+              fi
+            fi
+            
+            COUNTER=$((COUNTER + 1))
+            echo "Health check attempt $COUNTER/$MAX_ATTEMPTS..."
+            sleep 10
+          done
+          
+          echo "⚠️ Health check timed out. Manual verification required."
+          exit 1
+        continue-on-error: true
+
+      - name: Display deployment info
+        if: always()
+        run: |
+          echo "============================================"
+          echo "📦 Deployment Information - HOMOLOGATION"
+          echo "============================================"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo "============================================"
+          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
+          echo "============================================"
           MAX_ATTEMPTS=60
           while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
             POD=$(kubectl get pods -n billing-homologation \
@@ -482,7 +569,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://billing.example.com
+      url: https://billing.challengeone.com
     permissions:
       contents: read
       id-token: write
@@ -495,48 +582,66 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: github-actions-billing-service
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions-billing-prod
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.0
+          terraform_wrapper: false
+
+      - name: Update backend configuration for production
+        run: |
+          cd terraform
+          cat > backend.tf <<EOF
+          terraform {
+            backend "s3" {
+              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
+              key    = "v4/service-billing/production/terraform.tfstate"
+              region = "${{ env.AWS_REGION }}"
+            }
+          }
+          EOF
 
       - name: Terraform Init
         run: |
           cd terraform
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_BACKEND_BUCKET }}" \
-            -backend-config="key=billing-service/production/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
+          terraform init -reconfigure
 
       - name: Terraform Plan
         run: |
           cd terraform
           terraform plan \
-            -var="environment=production" \
-            -var="image_tag=${{ github.sha }}" \
-            -var="image_repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" \
+            -var-file=terraform.tfvars.production \
+            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
+            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
+            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
             -out=tfplan
-        env:
-          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Apply
         run: |
           cd terraform
           terraform apply -auto-approve tfplan
 
-      - name: Get kubeconfig
+      - name: Get EKS cluster name from remote state
+        id: eks-cluster
+        run: |
+          cd terraform
+          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-production")
+          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
+
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name billing-service-prod \
-            --region ${{ secrets.AWS_REGION }}
+            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
+            --region ${{ env.AWS_REGION }}
 
       - name: Wait for deployment rollout
         run: |
           kubectl rollout status deployment/billing-service \
-            -n billing-production \
+            -n ${{ env.KUBERNETES_NAMESPACE }} \
             --timeout=10m
         continue-on-error: true
 
@@ -545,12 +650,12 @@ jobs:
           COUNTER=0
           MAX_ATTEMPTS=90
           while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n billing-production \
-              -l app=billing-service \
+            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
+              -l app=billing \
               -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
             
             if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n billing-production $POD -- \
+              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
                 wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
               if [ ! -z "$HEALTH" ]; then
                 echo "✅ Production deployment is healthy"
@@ -570,38 +675,46 @@ jobs:
         if: failure()
         run: |
           echo "🔄 Initiating automatic rollback..."
-          cd terraform
-          # Get previous tag from tfstate
-          PREVIOUS_TAG=$(terraform state show -json | jq -r '.values.outputs.deployed_image_tag.value')
+          kubectl rollout undo deployment/billing-service \
+            -n ${{ env.KUBERNETES_NAMESPACE }}
           
-          if [ ! -z "$PREVIOUS_TAG" ] && [ "$PREVIOUS_TAG" != "null" ]; then
-            terraform apply \
-              -var="environment=production" \
-              -var="image_tag=$PREVIOUS_TAG" \
-              -var="image_repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" \
-              -auto-approve
-            
-            echo "✅ Rollback completed to image: $PREVIOUS_TAG"
-          else
-            echo "⚠️ Could not determine previous image tag for rollback"
-          fi
+          kubectl rollout status deployment/billing-service \
+            -n ${{ env.KUBERNETES_NAMESPACE }} \
+            --timeout=5m
+          
+          echo "✅ Rollback completed"
+
+      - name: Display deployment info
+        if: always()
+        run: |
+          echo "============================================"
+          echo "🚀 Deployment Information - PRODUCTION"
+          echo "============================================"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo "============================================"
+          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
+          echo "============================================"
 
       - name: Notify deployment status
         if: always()
-        uses: actions/github-script@v7
+        uses: slackapi/slack-github-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const status = '${{ job.status }}';
-            const emoji = status === 'success' ? '✅' : '❌';
-            const message = `${emoji} **Production Deployment** - ${status.toUpperCase()}\n\nCommit: ${{ github.sha }}\nRef: ${{ github.ref }}`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} Production Deployment - ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment*\n*Status:* ${{ job.status }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
         continue-on-error: true
 
   # ============================================================================

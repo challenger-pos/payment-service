@@ -7,7 +7,6 @@ variable "region" {
 variable "environment" {
   description = "Environment name"
   type        = string
-  default     = "homologation"
 }
 
 variable "project_name" {
@@ -38,6 +37,31 @@ variable "app_port" {
   description = "Application port"
   type        = number
   default     = 8080
+}
+
+# Resources
+variable "cpu_request" {
+  description = "CPU request"
+  type        = string
+  default     = "250m"
+}
+
+variable "cpu_limit" {
+  description = "CPU limit"
+  type        = string
+  default     = "500m"
+}
+
+variable "memory_request" {
+  description = "Memory request"
+  type        = string
+  default     = "512Mi"
+}
+
+variable "memory_limit" {
+  description = "Memory limit"
+  type        = string
+  default     = "1Gi"
 }
 
 # AWS Credentials (for DynamoDB and SQS)
@@ -73,6 +97,17 @@ variable "sqs_queue_url" {
   default     = ""
 }
 
+# Remote States
+variable "eks_state_key" {
+  description = "EKS Terraform state key"
+  type        = string
+}
+
+variable "dynamodb_state_key" {
+  description = "DynamoDB Terraform state key"
+  type        = string
+}
+
 # HPA
 variable "hpa_min_replicas" {
   description = "HPA minimum replicas"
@@ -88,6 +123,12 @@ variable "hpa_max_replicas" {
 
 variable "hpa_cpu_threshold" {
   description = "HPA CPU threshold percentage"
+  type        = number
+  default     = 70
+}
+
+variable "hpa_cpu_target" {
+  description = "HPA CPU target percentage (alias)"
   type        = number
   default     = 70
 }
