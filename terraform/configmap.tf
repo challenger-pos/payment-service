@@ -27,5 +27,13 @@ resource "kubernetes_config_map" "billing" {
     # Logging
     LOGGING_LEVEL_ROOT = "INFO"
     LOGGING_LEVEL_COM_FIAP = "DEBUG"
+
+    # Datadog
+    DD_TRACE_ENABLED                      = "true"
+    DD_SERVICE                            = var.service_name
+    DD_TRACE_HTTP_CLIENT_TAG_QUERY_STRING = "true"
+    DD_TRACE_LOGS_INJECTION               = "true"
+    DATADOG_STATSD_HOST                   = var.datadog_agent_host
+    DATADOG_STATSD_PORT                   = "8125"
   }
 }

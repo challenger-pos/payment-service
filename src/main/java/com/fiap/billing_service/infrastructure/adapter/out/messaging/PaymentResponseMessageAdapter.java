@@ -54,22 +54,7 @@ public class PaymentResponseMessageAdapter implements PaymentResponseMessagePort
 
       // Build message structure
       Map<String, Object> message = new HashMap<>();
-      message.put("paymentId", payment.getId().toString());
-      message.put("budgetId", payment.getBudgetId().toString());
       message.put("workOrderId", payment.getWorkOrderId().toString());
-      message.put("clientId", payment.getClientId().toString());
-      message.put("status", payment.getStatus().name());
-      message.put("amount", payment.getAmount());
-      message.put("externalPaymentId", payment.getExternalPaymentId());
-      message.put("paymentMethod", payment.getPaymentMethod());
-      message.put("qrCode", payment.getQrCode());
-      message.put("qrCodeBase64", payment.getQrCodeBase64());
-      message.put(
-          "createdAt", payment.getCreatedAt() != null ? payment.getCreatedAt().toString() : null);
-      message.put(
-          "processedAt",
-          payment.getProcessedAt() != null ? payment.getProcessedAt().toString() : null);
-      message.put("errorMessage", payment.getErrorMessage());
 
       // Convert message to JSON
       String messageJson = objectMapper.writeValueAsString(message);

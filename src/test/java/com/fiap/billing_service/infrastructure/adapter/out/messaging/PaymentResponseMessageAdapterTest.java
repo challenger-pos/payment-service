@@ -65,9 +65,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -96,9 +94,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -126,9 +122,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -156,9 +150,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -186,9 +178,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -206,14 +196,13 @@ class PaymentResponseMessageAdapterTest {
   void testSendPaymentResponse_SerializesAllFields() throws Exception {
     // Arrange
     UUID paymentId = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("150.00");
     LocalDateTime createdAt = LocalDateTime.now();
     LocalDateTime processedAt = LocalDateTime.now();
 
-    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+    Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
     payment.markAsProcessing("ext_123", "order_456", "PIX", "qr_code_data", "qr_base64");
     payment.markAsApproved();
 
@@ -227,15 +216,12 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
 
-    ArgumentCaptor<Map<String, Object>> messageCaptor =
-        ArgumentCaptor.forClass(Map.class);
+    ArgumentCaptor<Map<String, Object>> messageCaptor = ArgumentCaptor.forClass(Map.class);
 
     // Act
     adapter.sendPaymentResponse(payment);
@@ -246,9 +232,8 @@ class PaymentResponseMessageAdapterTest {
 
     org.assertj.core.api.Assertions.assertThat(capturedMessage)
         .containsEntry("paymentId", paymentId.toString())
-        .containsEntry("budgetId", budgetId.toString())
         .containsEntry("workOrderId", workOrderId.toString())
-        .containsEntry("clientId", clientId.toString())
+        .containsEntry("customerId", customerId.toString())
         .containsEntry("status", "APPROVED")
         .containsEntry("amount", amount)
         .containsEntry("externalPaymentId", "ext_123")
@@ -259,8 +244,7 @@ class PaymentResponseMessageAdapterTest {
 
   @Test
   @DisplayName("Should not throw exception when SQS client throws")
-  void testSendPaymentResponse_SQSClientThrowsException_DoesNotPropagate()
-      throws Exception {
+  void testSendPaymentResponse_SQSClientThrowsException_DoesNotPropagate() throws Exception {
     // Arrange
     Payment payment = createPaymentWithStatus(PaymentStatus.APPROVED);
 
@@ -275,8 +259,7 @@ class PaymentResponseMessageAdapterTest {
 
   @Test
   @DisplayName("Should not throw exception when JSON serialization fails")
-  void testSendPaymentResponse_JsonSerializationFails_DoesNotPropagate()
-      throws Exception {
+  void testSendPaymentResponse_JsonSerializationFails_DoesNotPropagate() throws Exception {
     // Arrange
     Payment payment = createPaymentWithStatus(PaymentStatus.APPROVED);
 
@@ -302,9 +285,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenThrow(new RuntimeException("Failed to send message"));
@@ -329,9 +310,7 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
-    lenient()
-        .when(objectMapper.writeValueAsString(any()))
-        .thenReturn(messageJson);
+    lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -354,12 +333,11 @@ class PaymentResponseMessageAdapterTest {
 
   private Payment createPaymentWithStatus(PaymentStatus status) {
     UUID paymentId = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("100.00");
 
-    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+    Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
 
     switch (status) {
       case APPROVED:

@@ -6,7 +6,6 @@ import com.fiap.billing_service.domain.entity.Payment;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
 import com.fiap.billing_service.infrastructure.adapter.out.persistence.entity.PaymentEntity;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,13 +31,13 @@ class PaymentMapperTest {
   void testToEntity_ValidPayment_MapsAllFields() {
     // Arrange
     UUID id = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("100.00");
 
-    Payment payment = new Payment(id, budgetId, workOrderId, clientId, amount);
-    payment.markAsProcessing("ext_pay_123", "order_pay_456", "pix", "qr_code_xyz", "qr_code_base64_abc");
+    Payment payment = new Payment(id, workOrderId, customerId, amount);
+    payment.markAsProcessing(
+        "ext_pay_123", "order_pay_456", "pix", "qr_code_xyz", "qr_code_base64_abc");
     payment.markAsApproved();
 
     // Act
@@ -47,9 +46,8 @@ class PaymentMapperTest {
     // Assert
     assertNotNull(entity);
     assertEquals(id, entity.getId());
-    assertEquals(budgetId, entity.getBudgetId());
     assertEquals(workOrderId, entity.getWorkOrderId());
-    assertEquals(clientId, entity.getClientId());
+    assertEquals(customerId, entity.getCustomerId());
     assertEquals(amount, entity.getAmount());
     assertEquals("APPROVED", entity.getStatus());
     assertEquals("ext_pay_123", entity.getExternalPaymentId());
@@ -64,7 +62,9 @@ class PaymentMapperTest {
   @DisplayName("Should map PENDING payment status to entity")
   void testToEntity_PendingStatus() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     // Payment defaults to PENDING status
 
     // Act
@@ -78,7 +78,9 @@ class PaymentMapperTest {
   @DisplayName("Should map PROCESSING payment status to entity")
   void testToEntity_ProcessingStatus() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     payment.markAsProcessing("ext_id", "order_id", "pix", null, null);
 
     // Act
@@ -94,7 +96,9 @@ class PaymentMapperTest {
   @DisplayName("Should map APPROVED payment status to entity")
   void testToEntity_ApprovedStatus() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     payment.markAsProcessing("ext_id", "order_id", "pix", "qr", "qr_b64");
     payment.markAsApproved();
 
@@ -109,7 +113,9 @@ class PaymentMapperTest {
   @DisplayName("Should map REJECTED payment status with error message to entity")
   void testToEntity_RejectedStatus_WithErrorMessage() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     payment.markAsRejected("Insufficient funds");
 
     // Act
@@ -124,7 +130,9 @@ class PaymentMapperTest {
   @DisplayName("Should map FAILED payment status with error message to entity")
   void testToEntity_FailedStatus_WithErrorMessage() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     payment.markAsFailed("Payment gateway timeout");
 
     // Act
@@ -139,7 +147,9 @@ class PaymentMapperTest {
   @DisplayName("Should handle null optional fields in toEntity")
   void testToEntity_NullOptionalFields() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     // Don't set optional fields
 
     // Act
@@ -160,7 +170,8 @@ class PaymentMapperTest {
   void testToEntity_PreservesAmountPrecision() {
     // Arrange
     BigDecimal preciseAmount = new BigDecimal("1234.56");
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), preciseAmount);
+    Payment payment =
+        new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), preciseAmount);
 
     // Act
     PaymentEntity entity = mapper.toEntity(payment);
@@ -174,20 +185,18 @@ class PaymentMapperTest {
   void testToEntity_PreservesAllUUIDs() {
     // Arrange
     UUID id = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
 
-    Payment payment = new Payment(id, budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+    Payment payment = new Payment(id, workOrderId, customerId, new BigDecimal("100.00"));
 
     // Act
     PaymentEntity entity = mapper.toEntity(payment);
 
     // Assert
     assertEquals(id, entity.getId());
-    assertEquals(budgetId, entity.getBudgetId());
     assertEquals(workOrderId, entity.getWorkOrderId());
-    assertEquals(clientId, entity.getClientId());
+    assertEquals(customerId, entity.getCustomerId());
   }
 
   // ==================== toDomain() Tests ====================
@@ -197,16 +206,14 @@ class PaymentMapperTest {
   void testToDomain_ApprovedStatus() {
     // Arrange
     UUID id = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("100.00");
 
     PaymentEntity entity = new PaymentEntity();
     entity.setId(id);
-    entity.setBudgetId(budgetId);
     entity.setWorkOrderId(workOrderId);
-    entity.setClientId(clientId);
+    entity.setCustomerId(customerId);
     entity.setAmount(amount);
     entity.setStatus("APPROVED");
     entity.setExternalPaymentId("ext_pay_123");
@@ -221,9 +228,8 @@ class PaymentMapperTest {
     // Assert
     assertNotNull(payment);
     assertEquals(id, payment.getId());
-    assertEquals(budgetId, payment.getBudgetId());
     assertEquals(workOrderId, payment.getWorkOrderId());
-    assertEquals(clientId, payment.getClientId());
+    assertEquals(customerId, payment.getCustomerId());
     assertEquals(amount, payment.getAmount());
     assertEquals(PaymentStatus.APPROVED, payment.getStatus());
     assertEquals("ext_pay_123", payment.getExternalPaymentId());
@@ -241,7 +247,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus("REJECTED");
     entity.setErrorMessage("Insufficient funds");
@@ -262,7 +268,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus("FAILED");
     entity.setErrorMessage("Timeout");
@@ -283,7 +289,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus("PROCESSING");
     entity.setExternalPaymentId("ext_pay_123");
@@ -309,7 +315,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus(null); // No status
 
@@ -330,7 +336,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus("PENDING");
 
@@ -355,7 +361,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(preciseAmount);
     entity.setStatus("PENDING");
 
@@ -371,12 +377,11 @@ class PaymentMapperTest {
   void testRoundTrip_DomainToEntityToDomain() {
     // Arrange
     UUID id = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("250.75");
 
-    Payment originalPayment = new Payment(id, budgetId, workOrderId, clientId, amount);
+    Payment originalPayment = new Payment(id, workOrderId, customerId, amount);
     originalPayment.markAsProcessing("ext_123", "order_456", "pix", "qr_xyz", "qr_b64_123");
     originalPayment.markAsApproved();
 
@@ -388,9 +393,8 @@ class PaymentMapperTest {
 
     // Assert
     assertEquals(id, recoveredPayment.getId());
-    assertEquals(budgetId, recoveredPayment.getBudgetId());
     assertEquals(workOrderId, recoveredPayment.getWorkOrderId());
-    assertEquals(clientId, recoveredPayment.getClientId());
+    assertEquals(customerId, recoveredPayment.getCustomerId());
     assertEquals(amount, recoveredPayment.getAmount());
     assertEquals(PaymentStatus.APPROVED, recoveredPayment.getStatus());
     assertEquals("ext_123", recoveredPayment.getExternalPaymentId());
@@ -481,7 +485,7 @@ class PaymentMapperTest {
     entity.setId(UUID.randomUUID());
     entity.setBudgetId(UUID.randomUUID());
     entity.setWorkOrderId(UUID.randomUUID());
-    entity.setClientId(UUID.randomUUID());
+    entity.setCustomerId(UUID.randomUUID());
     entity.setAmount(new BigDecimal("100.00"));
     entity.setStatus(status);
     return entity;

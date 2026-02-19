@@ -38,20 +38,20 @@ class PaymentQueueListenerTest {
   void testReceivePaymentRequest_ValidMessage_CallsUseCase() throws Exception {
     // Arrange
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
 
     String jsonMessage = "{\"workOrderId\":\"" + workOrderId + "\"}";
 
     PaymentRequestDto paymentRequest = new PaymentRequestDto();
     paymentRequest.setWorkOrderId(workOrderId);
-    paymentRequest.setClientId(clientId);
-    paymentRequest.setBudgetId(budgetId);
+    paymentRequest.setCustomerId(customerId);
 
-    Payment processedPayment = new Payment(workOrderId, budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+    Payment processedPayment =
+        new Payment(workOrderId, workOrderId, customerId, new BigDecimal("100.00"));
 
     when(objectMapper.readValue(jsonMessage, PaymentRequestDto.class)).thenReturn(paymentRequest);
-    when(processPaymentUseCase.processPayment(any(PaymentRequestDto.class))).thenReturn(processedPayment);
+    when(processPaymentUseCase.processPayment(any(PaymentRequestDto.class)))
+        .thenReturn(processedPayment);
 
     // Act
     listener.receivePaymentRequest(jsonMessage);
@@ -60,8 +60,7 @@ class PaymentQueueListenerTest {
     ArgumentCaptor<PaymentRequestDto> captor = ArgumentCaptor.forClass(PaymentRequestDto.class);
     verify(processPaymentUseCase, times(1)).processPayment(captor.capture());
     assertThat(captor.getValue().getWorkOrderId()).isEqualTo(workOrderId);
-    assertThat(captor.getValue().getClientId()).isEqualTo(clientId);
-    assertThat(captor.getValue().getBudgetId()).isEqualTo(budgetId);
+    assertThat(captor.getValue().getCustomerId()).isEqualTo(customerId);
   }
 
   @Test
@@ -162,8 +161,7 @@ class PaymentQueueListenerTest {
 
     PaymentRequestDto paymentRequest = new PaymentRequestDto();
     paymentRequest.setWorkOrderId(workOrderId);
-    paymentRequest.setClientId(clientId);
-    paymentRequest.setBudgetId(budgetId);
+    paymentRequest.setCustomerId(clientId);
     paymentRequest.setDescription(description);
 
     when(objectMapper.readValue(jsonMessage, PaymentRequestDto.class)).thenReturn(paymentRequest);
@@ -178,8 +176,7 @@ class PaymentQueueListenerTest {
 
     PaymentRequestDto capturedRequest = captor.getValue();
     assertThat(capturedRequest.getWorkOrderId()).isEqualTo(workOrderId);
-    assertThat(capturedRequest.getClientId()).isEqualTo(clientId);
-    assertThat(capturedRequest.getBudgetId()).isEqualTo(budgetId);
+    assertThat(capturedRequest.getCustomerId()).isEqualTo(clientId);
     assertThat(capturedRequest.getDescription()).isEqualTo(description);
   }
 }

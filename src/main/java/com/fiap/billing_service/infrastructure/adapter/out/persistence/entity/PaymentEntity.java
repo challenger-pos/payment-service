@@ -1,15 +1,15 @@
 package com.fiap.billing_service.infrastructure.adapter.out.persistence.entity;
 
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 /**
  * PaymentEntity - Represents a payment record in DynamoDB.
- * 
- * Partition Key: workOrderId (provides uniqueness and distribution across partitions)
- * Sort Key: createdAtEpoch (timestamp for ordering and range queries)
+ *
+ * <p>Partition Key: workOrderId (provides uniqueness and distribution across partitions) Sort Key:
+ * createdAtEpoch (timestamp for ordering and range queries)
  */
 @DynamoDbBean
 public class PaymentEntity {
@@ -27,7 +27,7 @@ public class PaymentEntity {
   private Long createdAtEpoch; // Stored as epoch milliseconds for DynamoDB compatibility
 
   // Client reference (logical reference to another service)
-  private UUID clientId;
+  private UUID customerId;
 
   // Payment amount in currency (e.g., BRL)
   private BigDecimal amount;
@@ -101,20 +101,19 @@ public class PaymentEntity {
     this.createdAtEpoch = createdAtEpoch;
     // Auto-convert from epoch milliseconds for convenience
     if (createdAtEpoch != null) {
-      this.createdAt = java.time.LocalDateTime.ofInstant(
-          java.time.Instant.ofEpochMilli(createdAtEpoch),
-          java.time.ZoneId.systemDefault()
-      );
+      this.createdAt =
+          java.time.LocalDateTime.ofInstant(
+              java.time.Instant.ofEpochMilli(createdAtEpoch), java.time.ZoneId.systemDefault());
     }
   }
 
-  @DynamoDbAttribute("clientId")
-  public UUID getClientId() {
-    return clientId;
+  @DynamoDbAttribute("customerId")
+  public UUID getCustomerId() {
+    return customerId;
   }
 
-  public void setClientId(UUID clientId) {
-    this.clientId = clientId;
+  public void setCustomerId(UUID customerId) {
+    this.customerId = customerId;
   }
 
   @DynamoDbAttribute("amount")
@@ -189,10 +188,9 @@ public class PaymentEntity {
     this.processedAtEpoch = processedAtEpoch;
     // Auto-convert from epoch milliseconds for convenience
     if (processedAtEpoch != null) {
-      this.processedAt = java.time.LocalDateTime.ofInstant(
-          java.time.Instant.ofEpochMilli(processedAtEpoch),
-          java.time.ZoneId.systemDefault()
-      );
+      this.processedAt =
+          java.time.LocalDateTime.ofInstant(
+              java.time.Instant.ofEpochMilli(processedAtEpoch), java.time.ZoneId.systemDefault());
     }
   }
 
@@ -213,9 +211,8 @@ public class PaymentEntity {
     this.createdAt = createdAt;
     // Auto-convert to epoch milliseconds for DynamoDB storage
     if (createdAt != null) {
-      this.createdAtEpoch = java.time.Instant.from(
-          createdAt.atZone(java.time.ZoneId.systemDefault())
-      ).toEpochMilli();
+      this.createdAtEpoch =
+          java.time.Instant.from(createdAt.atZone(java.time.ZoneId.systemDefault())).toEpochMilli();
     }
   }
 
@@ -227,9 +224,9 @@ public class PaymentEntity {
     this.processedAt = processedAt;
     // Auto-convert to epoch milliseconds for DynamoDB storage
     if (processedAt != null) {
-      this.processedAtEpoch = java.time.Instant.from(
-          processedAt.atZone(java.time.ZoneId.systemDefault())
-      ).toEpochMilli();
+      this.processedAtEpoch =
+          java.time.Instant.from(processedAt.atZone(java.time.ZoneId.systemDefault()))
+              .toEpochMilli();
     }
   }
 }

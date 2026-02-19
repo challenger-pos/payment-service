@@ -5,6 +5,8 @@ import com.fiap.billing_service.domain.dto.PaymentResponse;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
 import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderRequest;
 import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderResponse;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -40,7 +42,14 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
   }
 
   @Override
-  public PaymentResponse processPixPayment(BigDecimal amount, String email, String description) {
+  public PaymentResponse processPixPayment(BigDecimal amount, String email, String description, String firstName) {
+    Span span = GlobalTracer.get().activeSpan();
+    if (span != null) {
+      span.setTag("operation.type", "processPixPayment");
+      span.setTag("payment.amount", amount != null ? amount.toString() : "0");
+      span.setTag("payment.provider", "mercadopago");
+    }
+
     log.info(
         "Processing PIX payment through Mercado Pago Orders API: amount={}, email={}",
         amount,
@@ -55,7 +64,8 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
       // Create order request
       MercadoPagoOrderRequest orderRequest =
-          new MercadoPagoOrderRequest(externalReference, amount, payerEmail);
+          new MercadoPagoOrderRequest(externalReference, amount, payerEmail, firstName);
+      log.info("Created Mercado Pago order request: {}", orderRequest);
 
       // Set up headers with Authorization and X-Idempotency-Key
       HttpHeaders headers = new HttpHeaders();
@@ -116,6 +126,12 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
         errorMessage = orderResponse.getTransactions().getPayments()[0].getStatusDetail();
       }
 
+      if (span != null) {
+        span.setTag("payment.order_id", orderId);
+        span.setTag("payment.payment_id", paymentId);
+        span.setTag("payment.status", status.name());
+      }
+
       log.info(
           "PIX payment processed: orderId={}, paymentId={}, status={}", orderId, paymentId, status);
 
@@ -130,14 +146,14 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
   private PaymentStatus mapStatus(String mpStatus) {
     if (mpStatus == null) {
-      return PaymentStatus.PROCESSING;
+      return PaymentStatus.REJECTED;
     }
 
     return switch (mpStatus.toLowerCase()) {
-      case "approved", "processed" -> PaymentStatus.APPROVED;
-      case "rejected", "cancelled" -> PaymentStatus.REJECTED;
+      case "approved", "processed", "accredited" -> PaymentStatus.APPROVED;
+      case "waiting_transfer", "cancelled" -> PaymentStatus.REJECTED;
       case "pending", "processing" -> PaymentStatus.PROCESSING;
-      default -> PaymentStatus.PROCESSING;
+      default -> PaymentStatus.REJECTED;
     };
   }
 }

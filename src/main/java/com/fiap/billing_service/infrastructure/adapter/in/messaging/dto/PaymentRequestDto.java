@@ -1,5 +1,6 @@
 package com.fiap.billing_service.infrastructure.adapter.in.messaging.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -8,32 +9,35 @@ import java.util.UUID;
 /** DTO for receiving payment requests from the queue */
 public class PaymentRequestDto {
 
-  @NotNull
-  @JsonProperty("budget_id")
-  private UUID budgetId;
-
   @NotNull(message = "WorkOrder ID is required")
   @JsonProperty("work_order_id")
   private UUID workOrderId;
 
-  @NotNull(message = "Client ID is required")
-  @JsonProperty("client_id")
-  private UUID clientId;
+  @NotNull(message = "Customer ID is required")
+  @JsonProperty("customer_id")
+  private UUID customerId;
 
-  @NotNull(message = "order is required")
+  @NotNull(message = "Amount is required")
+  @JsonProperty("amount")
+  private BigDecimal amount;
+
   @JsonProperty("order_request")
+  @JsonIgnore
   private OrderRequest orderRequest;
 
-  private String description;
+  @JsonIgnore private String description;
+
+  @NotNull(message = "First name is required")
+  @JsonProperty("first_name")
+  private String firstName;
 
   public PaymentRequestDto() {}
 
-  public PaymentRequestDto(
-      UUID workOrderId, UUID clientId, UUID budgetId, OrderRequest orderRequest) {
+  public PaymentRequestDto(UUID workOrderId, UUID customerId, BigDecimal amount, String firstName) {
     this.workOrderId = workOrderId;
-    this.clientId = clientId;
-    this.budgetId = budgetId;
-    this.orderRequest = orderRequest;
+    this.customerId = customerId;
+    this.firstName = firstName;
+    this.orderRequest = new OrderRequest(amount, "test@testuser.com", firstName);
   }
 
   public UUID getWorkOrderId() {
@@ -44,12 +48,28 @@ public class PaymentRequestDto {
     this.workOrderId = workOrderId;
   }
 
-  public UUID getClientId() {
-    return clientId;
+  public String getFirstName() {
+    return firstName;
   }
 
-  public void setClientId(UUID clientId) {
-    this.clientId = clientId;
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public UUID getCustomerId() {
+    return customerId;
+  }
+
+  public void setCustomerId(UUID customerId) {
+    this.customerId = customerId;
+  }
+
+  public BigDecimal getAmount() {
+    return amount;
+  }
+
+  public void setAmount(BigDecimal amount) {
+    this.amount = amount;
   }
 
   public OrderRequest getOrderRequest() {
@@ -58,14 +78,6 @@ public class PaymentRequestDto {
 
   public void setOrderRequest(OrderRequest orderRequest) {
     this.orderRequest = orderRequest;
-  }
-
-  public UUID getBudgetId() {
-    return budgetId;
-  }
-
-  public void setBudgetId(UUID budgetId) {
-    this.budgetId = budgetId;
   }
 
   public String getDescription() {
@@ -96,9 +108,7 @@ public class PaymentRequestDto {
 
     public OrderRequest() {}
 
-    public OrderRequest(
-        String externalReference, BigDecimal amount, String email, String firstName) {
-      this.externalReference = externalReference;
+    public OrderRequest(BigDecimal amount, String email, String firstName) {
       this.totalAmount = amount.toString();
       this.payer = new OrderRequest.Payer(email, firstName);
 
@@ -150,7 +160,7 @@ public class PaymentRequestDto {
     // Inner classes
     public static class Payer {
       @JsonProperty("email")
-      private String email;
+      private String email = "test@testuser.com";
 
       @JsonProperty("first_name")
       private String firstName = "APRO";
