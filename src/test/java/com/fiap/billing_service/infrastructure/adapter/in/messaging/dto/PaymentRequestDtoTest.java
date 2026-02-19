@@ -13,12 +13,22 @@ class PaymentRequestDtoTest {
 
   private PaymentRequestDto dto;
   private UUID workOrderId;
+<<<<<<< HEAD
   private UUID customerId;
+=======
+  private UUID clientId;
+  private UUID budgetId;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
   @BeforeEach
   void setUp() {
     workOrderId = UUID.randomUUID();
+<<<<<<< HEAD
     customerId = UUID.randomUUID();
+=======
+    clientId = UUID.randomUUID();
+    budgetId = UUID.randomUUID();
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     dto = new PaymentRequestDto();
   }
 
@@ -27,6 +37,7 @@ class PaymentRequestDtoTest {
   void testConstructor_WithAllParameters_InitializesFields() {
     // Arrange
     PaymentRequestDto.OrderRequest orderRequest =
+<<<<<<< HEAD
         new PaymentRequestDto(customerId, UUID.randomUUID(), new BigDecimal("100.00"), "APRO")
         .new OrderRequest(new BigDecimal("100.00"), "", "true");
 
@@ -36,6 +47,18 @@ class PaymentRequestDtoTest {
     // Assert
     assertThat(dto.getWorkOrderId()).isEqualTo(workOrderId);
     assertThat(dto.getCustomerId()).isEqualTo(customerId);
+=======
+        new PaymentRequestDto(budgetId, clientId, UUID.randomUUID(), null)
+            .new OrderRequest("ext_ref", new BigDecimal("100.00"), "test@example.com", "John");
+
+    // Act
+    dto = new PaymentRequestDto(workOrderId, clientId, budgetId, orderRequest);
+
+    // Assert
+    assertThat(dto.getWorkOrderId()).isEqualTo(workOrderId);
+    assertThat(dto.getClientId()).isEqualTo(clientId);
+    assertThat(dto.getBudgetId()).isEqualTo(budgetId);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     assertThat(dto.getOrderRequest()).isEqualTo(orderRequest);
   }
 
@@ -53,10 +76,27 @@ class PaymentRequestDtoTest {
   @DisplayName("Should set and get client ID")
   void testSetClientId() {
     // Act
+<<<<<<< HEAD
     dto.setCustomerId(customerId);
 
     // Assert
     assertThat(dto.getCustomerId()).isEqualTo(customerId);
+=======
+    dto.setClientId(clientId);
+
+    // Assert
+    assertThat(dto.getClientId()).isEqualTo(clientId);
+  }
+
+  @Test
+  @DisplayName("Should set and get budget ID")
+  void testSetBudgetId() {
+    // Act
+    dto.setBudgetId(budgetId);
+
+    // Assert
+    assertThat(dto.getBudgetId()).isEqualTo(budgetId);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   }
 
   @Test
@@ -83,8 +123,13 @@ class PaymentRequestDtoTest {
 
     // Act
     PaymentRequestDto.OrderRequest orderRequest =
+<<<<<<< HEAD
         new PaymentRequestDto(customerId, workOrderId, new BigDecimal("100.00"), "false")
         .new OrderRequest(amount, "", "false");
+=======
+        new PaymentRequestDto(budgetId, clientId, workOrderId, null)
+            .new OrderRequest(externalReference, amount, email, firstName);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Assert
     assertThat(orderRequest.getType()).isEqualTo("online");
@@ -102,8 +147,13 @@ class PaymentRequestDtoTest {
   void testSetOrderRequest() {
     // Arrange
     PaymentRequestDto.OrderRequest orderRequest =
+<<<<<<< HEAD
         new PaymentRequestDto(customerId, workOrderId, new BigDecimal("150.00"), "true")
         .new OrderRequest(new BigDecimal("150.00"), "", "true");
+=======
+        new PaymentRequestDto(budgetId, clientId, workOrderId, null)
+            .new OrderRequest("ref_456", new BigDecimal("150.00"), "user@test.com", "Bob");
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Act
     dto.setOrderRequest(orderRequest);
@@ -119,6 +169,7 @@ class PaymentRequestDtoTest {
     // Arrange
     UUID testWorkOrderId = UUID.randomUUID();
     UUID testClientId = UUID.randomUUID();
+<<<<<<< HEAD
     PaymentRequestDto testDto = new PaymentRequestDto();
     testDto.setWorkOrderId(testWorkOrderId);
     testDto.setCustomerId(testClientId);
@@ -126,11 +177,28 @@ class PaymentRequestDtoTest {
 
     PaymentRequestDto.OrderRequest orderRequest =
         testDto.new OrderRequest(new BigDecimal("500.00"), "", "true");
+=======
+    UUID testBudgetId = UUID.randomUUID();
+    PaymentRequestDto testDto = new PaymentRequestDto();
+    testDto.setWorkOrderId(testWorkOrderId);
+    testDto.setClientId(testClientId);
+    testDto.setBudgetId(testBudgetId);
+    testDto.setDescription("Test payment");
+
+    PaymentRequestDto.OrderRequest orderRequest =
+        testDto.new OrderRequest(
+            "order_xyz", new BigDecimal("500.00"), "premium@test.com", "Premium User");
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     testDto.setOrderRequest(orderRequest);
 
     // Assert
     assertThat(testDto.getWorkOrderId()).isEqualTo(testWorkOrderId);
+<<<<<<< HEAD
     assertThat(testDto.getCustomerId()).isEqualTo(testClientId);
+=======
+    assertThat(testDto.getClientId()).isEqualTo(testClientId);
+    assertThat(testDto.getBudgetId()).isEqualTo(testBudgetId);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     assertThat(testDto.getDescription()).isEqualTo("Test payment");
 
     // Verify OrderRequest

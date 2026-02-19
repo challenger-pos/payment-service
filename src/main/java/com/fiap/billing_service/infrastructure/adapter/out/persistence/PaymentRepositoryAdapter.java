@@ -4,6 +4,7 @@ import com.fiap.billing_service.application.port.out.PaymentRepositoryPort;
 import com.fiap.billing_service.domain.entity.Payment;
 import com.fiap.billing_service.infrastructure.adapter.out.persistence.entity.PaymentEntity;
 import com.fiap.billing_service.infrastructure.adapter.out.persistence.mapper.PaymentMapper;
+<<<<<<< HEAD
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,8 +15,12 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
+=======
+import com.fiap.billing_service.infrastructure.adapter.out.persistence.repository.SpringDataPaymentRepository;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 /**
  * Adapter for Payment persistence using Amazon DynamoDB.
@@ -32,6 +37,7 @@ import java.util.UUID;
 @Component
 public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
 
+<<<<<<< HEAD
   private static final Logger logger = LoggerFactory.getLogger(PaymentRepositoryAdapter.class);
 
   @Value("${dynamodb.table-name:payments}")
@@ -179,5 +185,25 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
                    workOrderId, e.getMessage(), e);
       throw e;
     }
+=======
+  private final SpringDataPaymentRepository repository;
+  private final PaymentMapper mapper;
+
+  public PaymentRepositoryAdapter(SpringDataPaymentRepository repository, PaymentMapper mapper) {
+    this.repository = repository;
+    this.mapper = mapper;
+  }
+
+  @Override
+  public Payment save(Payment payment) {
+    var entity = mapper.toEntity(payment);
+    repository.save(entity);
+    return payment;
+  }
+
+  @Override
+  public Optional<Payment> findByWorkOrderId(UUID workOrderId) {
+    return repository.findByWorkOrderId(workOrderId).map(mapper::toDomain);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   }
 }

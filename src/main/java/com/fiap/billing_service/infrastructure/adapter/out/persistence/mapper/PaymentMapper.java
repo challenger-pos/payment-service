@@ -11,8 +11,14 @@ public class PaymentMapper {
   public PaymentEntity toEntity(Payment payment) {
     PaymentEntity entity = new PaymentEntity();
     entity.setId(payment.getId());
+<<<<<<< HEAD
     entity.setWorkOrderId(payment.getWorkOrderId());
     entity.setCustomerId(payment.getCustomerId());
+=======
+    entity.setBudgetId(payment.getBudgetId());
+    entity.setWorkOrderId(payment.getWorkOrderId());
+    entity.setClientId(payment.getClientId());
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     entity.setAmount(payment.getAmount());
     entity.setStatus(payment.getStatus().name());
     entity.setExternalPaymentId(payment.getExternalPaymentId());
@@ -37,7 +43,15 @@ public class PaymentMapper {
   public Payment toDomain(PaymentEntity entity) {
     Payment payment =
         new Payment(
+<<<<<<< HEAD
             entity.getId(), entity.getWorkOrderId(), entity.getCustomerId(), entity.getAmount());
+=======
+            entity.getId(),
+            entity.getBudgetId(),
+            entity.getWorkOrderId(),
+            entity.getClientId(),
+            entity.getAmount());
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Restore payment status and other fields
     if (entity.getStatus() != null) {

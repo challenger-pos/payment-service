@@ -22,3 +22,13 @@ output "deployment_name" {
   description = "Deployment name"
   value       = kubernetes_deployment.billing.metadata[0].name
 }
+
+output "deployed_image_tag" {
+  description = "Currently deployed image tag (for rollback purposes)"
+  value       = var.image_tag
+}
+
+output "deployed_image" {
+  description = "Full deployed image with tag"
+  value       = "${var.image_repository}:${var.image_tag}"
+}

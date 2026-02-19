@@ -36,7 +36,12 @@ class ProcessPaymentServiceExceptionHandlingTest {
   private ProcessPaymentService service;
 
   private UUID workOrderId;
+<<<<<<< HEAD
   private UUID customerId;
+=======
+  private UUID clientId;
+  private UUID budgetId;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   private PaymentRequestDto paymentRequest;
 
   @BeforeEach
@@ -46,11 +51,21 @@ class ProcessPaymentServiceExceptionHandlingTest {
             paymentRepository, paymentGateway, paymentOrderQuery, paymentResponseMessage);
 
     workOrderId = UUID.randomUUID();
+<<<<<<< HEAD
     customerId = UUID.randomUUID();
 
     paymentRequest = new PaymentRequestDto();
     paymentRequest.setWorkOrderId(workOrderId);
     paymentRequest.setCustomerId(customerId);
+=======
+    clientId = UUID.randomUUID();
+    budgetId = UUID.randomUUID();
+
+    paymentRequest = new PaymentRequestDto();
+    paymentRequest.setWorkOrderId(workOrderId);
+    paymentRequest.setClientId(clientId);
+    paymentRequest.setBudgetId(budgetId);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     paymentRequest.setDescription("Test payment");
 
     PaymentRequestDto.OrderRequest orderRequest = paymentRequest.new OrderRequest();
@@ -65,17 +80,30 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment savePayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(savePayment);
 
     when(paymentGateway.processPixPayment(any(), any(), any(), any()))
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+
+    when(paymentRepository.save(any(Payment.class))).thenReturn(savePayment);
+
+    when(paymentGateway.processPixPayment(any(), any(), any()))
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
         .thenThrow(new RuntimeException("Gateway unavailable"));
 
     ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
 
     // Act & Assert
+<<<<<<< HEAD
     assertThrows(PaymentProcessingException.class, () -> service.processPayment(paymentRequest));
+=======
+    assertThrows(
+        PaymentProcessingException.class, () -> service.processPayment(paymentRequest));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     verify(paymentRepository, times(2)).save(paymentCaptor.capture());
     Payment failedPayment = paymentCaptor.getValue();
@@ -84,20 +112,33 @@ class ProcessPaymentServiceExceptionHandlingTest {
   }
 
   @Test
+<<<<<<< HEAD
   @DisplayName("Should use fallback status when query fails with initial response approved")
+=======
+  @DisplayName(
+      "Should use fallback status when query fails with initial response approved")
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   void testProcessPayment_QueryFails_FallbackApproved() {
     // Arrange
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.APPROVED, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     when(paymentOrderQuery.getOrderStatus(anyString()))
         .thenThrow(new RuntimeException("Query timeout"));
@@ -119,6 +160,7 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
 
     PaymentResponse gatewayResponse =
@@ -133,6 +175,16 @@ class ProcessPaymentServiceExceptionHandlingTest {
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+
+    PaymentResponse gatewayResponse =
+        new PaymentResponse(
+            "ext123", "order123", "pix", PaymentStatus.REJECTED, "qr", "qr64", "Insufficient funds");
+
+    when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     when(paymentOrderQuery.getOrderStatus(anyString()))
         .thenThrow(new RuntimeException("Query timeout"));
@@ -155,17 +207,28 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.PROCESSING, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
 
     Payment queryResult =
         new Payment(newPayment.getId(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+
+    Payment queryResult =
+        new Payment(newPayment.getId(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     queryResult.markAsProcessing("ext123", "order123", "pix", "qr", "qr64");
     when(paymentOrderQuery.getOrderStatus(any())).thenReturn(queryResult);
 
@@ -185,17 +248,28 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.PROCESSING, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
 
     Payment queryResult =
         new Payment(newPayment.getId(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+
+    Payment queryResult =
+        new Payment(newPayment.getId(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     queryResult.markAsRejected("Payment limit exceeded");
     when(paymentOrderQuery.getOrderStatus(any())).thenReturn(queryResult);
 
@@ -216,17 +290,28 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.PROCESSING, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
 
     Payment queryResult =
         new Payment(newPayment.getId(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+
+    Payment queryResult =
+        new Payment(newPayment.getId(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     queryResult.markAsApproved();
     when(paymentOrderQuery.getOrderStatus(any())).thenReturn(queryResult);
 
@@ -249,17 +334,27 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.APPROVED, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
 
     Payment queryResult =
         new Payment(newPayment.getId(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+
+    Payment queryResult = new Payment(newPayment.getId(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     queryResult.markAsApproved();
     when(paymentOrderQuery.getOrderStatus(any())).thenReturn(queryResult);
 
@@ -270,7 +365,11 @@ class ProcessPaymentServiceExceptionHandlingTest {
 
     // Assert
     assertNotNull(result);
+<<<<<<< HEAD
     verify(paymentGateway).processPixPayment(any(), any(), descriptionCaptor.capture(), any());
+=======
+    verify(paymentGateway).processPixPayment(any(), any(), descriptionCaptor.capture());
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     assertTrue(descriptionCaptor.getValue().contains("Payment for order"));
   }
 
@@ -281,17 +380,27 @@ class ProcessPaymentServiceExceptionHandlingTest {
     when(paymentRepository.findByWorkOrderId(workOrderId)).thenReturn(Optional.empty());
 
     Payment newPayment =
+<<<<<<< HEAD
         new Payment(UUID.randomUUID(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+        new Payment(UUID.randomUUID(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     PaymentResponse gatewayResponse =
         new PaymentResponse(
             "ext123", "order123", "pix", PaymentStatus.APPROVED, "qr", "qr64", null);
 
     when(paymentRepository.save(any(Payment.class))).thenReturn(newPayment);
+<<<<<<< HEAD
     when(paymentGateway.processPixPayment(any(), any(), any(), any())).thenReturn(gatewayResponse);
 
     Payment queryResult =
         new Payment(newPayment.getId(), workOrderId, customerId, new BigDecimal("100.00"));
+=======
+    when(paymentGateway.processPixPayment(any(), any(), any())).thenReturn(gatewayResponse);
+
+    Payment queryResult = new Payment(newPayment.getId(), budgetId, workOrderId, clientId, new BigDecimal("100.00"));
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     queryResult.markAsApproved();
     when(paymentOrderQuery.getOrderStatus(any())).thenReturn(queryResult);
 

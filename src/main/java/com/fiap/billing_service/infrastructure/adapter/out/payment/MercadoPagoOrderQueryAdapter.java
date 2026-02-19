@@ -23,7 +23,12 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class MercadoPagoOrderQueryAdapter implements PaymentOrderQueryPort {
 
+<<<<<<< HEAD
   private static final Logger log = LoggerFactory.getLogger(MercadoPagoOrderQueryAdapter.class);
+=======
+  private static final Logger log =
+      LoggerFactory.getLogger(MercadoPagoOrderQueryAdapter.class);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   private static final String ORDERS_API_URL = "https://api.mercadopago.com/v1/orders";
 
   @Value("${mercadopago.access-token}")
@@ -131,12 +136,21 @@ public class MercadoPagoOrderQueryAdapter implements PaymentOrderQueryPort {
     Payment payment =
         new Payment(
             UUID.randomUUID(),
+<<<<<<< HEAD
+=======
+            null, // budgetId not available from API query
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
             null, // workOrderId not available from API query
             null, // clientId not available from API query
             null); // amount not available from API query
 
     // Update payment with gateway response
+<<<<<<< HEAD
     payment.markAsProcessing(externalPaymentId, orderId, "pix", qrCode, qrCodeBase64);
+=======
+    payment.markAsProcessing(
+        externalPaymentId, orderId, "pix", qrCode, qrCodeBase64);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Apply final status
     if (status == PaymentStatus.APPROVED) {
@@ -161,6 +175,7 @@ public class MercadoPagoOrderQueryAdapter implements PaymentOrderQueryPort {
    */
   private PaymentStatus mapStatus(String mpStatus) {
     if (mpStatus == null) {
+<<<<<<< HEAD
       return PaymentStatus.REJECTED;
     }
 
@@ -169,6 +184,16 @@ public class MercadoPagoOrderQueryAdapter implements PaymentOrderQueryPort {
       case "waiting_transfer", "cancelled" -> PaymentStatus.REJECTED;
       case "pending", "processing" -> PaymentStatus.PROCESSING;
       default -> PaymentStatus.REJECTED;
+=======
+      return PaymentStatus.PROCESSING;
+    }
+
+    return switch (mpStatus.toLowerCase()) {
+      case "approved", "processed" -> PaymentStatus.APPROVED;
+      case "rejected", "cancelled" -> PaymentStatus.REJECTED;
+      case "pending", "processing" -> PaymentStatus.PROCESSING;
+      default -> PaymentStatus.PROCESSING;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     };
   }
 }

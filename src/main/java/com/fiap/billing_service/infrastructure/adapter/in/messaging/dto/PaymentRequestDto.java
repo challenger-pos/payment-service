@@ -9,6 +9,7 @@ import java.util.UUID;
 /** DTO for receiving payment requests from the queue */
 public class PaymentRequestDto {
 
+<<<<<<< HEAD
   @NotNull(message = "WorkOrder ID is required")
   @JsonProperty("work_order_id")
   private UUID workOrderId;
@@ -40,6 +41,36 @@ public class PaymentRequestDto {
     this.orderRequest = new OrderRequest(amount, "test@testuser.com", firstName);
   }
 
+=======
+  @NotNull
+  @JsonProperty("budget_id")
+  private UUID budgetId;
+
+  @NotNull(message = "WorkOrder ID is required")
+  @JsonProperty("work_order_id")
+  private UUID workOrderId;
+
+  @NotNull(message = "Client ID is required")
+  @JsonProperty("client_id")
+  private UUID clientId;
+
+  @NotNull(message = "order is required")
+  @JsonProperty("order_request")
+  private OrderRequest orderRequest;
+
+  private String description;
+
+  public PaymentRequestDto() {}
+
+  public PaymentRequestDto(
+      UUID workOrderId, UUID clientId, UUID budgetId, OrderRequest orderRequest) {
+    this.workOrderId = workOrderId;
+    this.clientId = clientId;
+    this.budgetId = budgetId;
+    this.orderRequest = orderRequest;
+  }
+
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   public UUID getWorkOrderId() {
     return workOrderId;
   }
@@ -48,6 +79,7 @@ public class PaymentRequestDto {
     this.workOrderId = workOrderId;
   }
 
+<<<<<<< HEAD
   public String getFirstName() {
     return firstName;
   }
@@ -70,6 +102,14 @@ public class PaymentRequestDto {
 
   public void setAmount(BigDecimal amount) {
     this.amount = amount;
+=======
+  public UUID getClientId() {
+    return clientId;
+  }
+
+  public void setClientId(UUID clientId) {
+    this.clientId = clientId;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   }
 
   public OrderRequest getOrderRequest() {
@@ -80,6 +120,17 @@ public class PaymentRequestDto {
     this.orderRequest = orderRequest;
   }
 
+<<<<<<< HEAD
+=======
+  public UUID getBudgetId() {
+    return budgetId;
+  }
+
+  public void setBudgetId(UUID budgetId) {
+    this.budgetId = budgetId;
+  }
+
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   public String getDescription() {
     return description;
   }
@@ -108,7 +159,13 @@ public class PaymentRequestDto {
 
     public OrderRequest() {}
 
+<<<<<<< HEAD
     public OrderRequest(BigDecimal amount, String email, String firstName) {
+=======
+    public OrderRequest(
+        String externalReference, BigDecimal amount, String email, String firstName) {
+      this.externalReference = externalReference;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
       this.totalAmount = amount.toString();
       this.payer = new OrderRequest.Payer(email, firstName);
 
@@ -160,7 +217,11 @@ public class PaymentRequestDto {
     // Inner classes
     public static class Payer {
       @JsonProperty("email")
+<<<<<<< HEAD
       private String email = "test@testuser.com";
+=======
+      private String email;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
       @JsonProperty("first_name")
       private String firstName = "APRO";

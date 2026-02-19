@@ -85,6 +85,15 @@
             <artifactId>dynamodb</artifactId>
         </dependency>
 
+<<<<<<< HEAD
+=======
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
         <!-- AWS SDK for SQS -->
         <dependency>
@@ -139,6 +148,16 @@
             <groupId>me.paulschwarz</groupId>
             <artifactId>spring-dotenv</artifactId>
             <version>4.0.0</version>
+        </dependency>
+
+        <!-- Flyway for database migrations -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- Lombok -->
@@ -261,7 +280,11 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
+<<<<<<< HEAD
                 <version>4.0.0.4121</version>
+=======
+                <version>3.11.0.3477</version>
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
             </plugin>
 
             <!-- Maven Surefire Report Plugin -->
@@ -272,11 +295,19 @@
             </plugin>
 
             <!-- Maven Failsafe Report Plugin -->
+<<<<<<< HEAD
             <!--            <plugin>-->
             <!--                <groupId>org.apache.maven.plugins</groupId>-->
             <!--                <artifactId>maven-failsafe-report-plugin</artifactId>-->
             <!--                <version>3.2.5</version>-->
             <!--            </plugin>-->
+=======
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-report-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
         </plugins>
     </build>
 

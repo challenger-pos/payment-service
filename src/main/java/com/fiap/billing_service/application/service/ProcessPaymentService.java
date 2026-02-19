@@ -9,11 +9,21 @@ import com.fiap.billing_service.domain.entity.Payment;
 import com.fiap.billing_service.domain.exception.PaymentProcessingException;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
 import com.fiap.billing_service.infrastructure.adapter.in.messaging.dto.PaymentRequestDto;
+<<<<<<< HEAD
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
+=======
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
 @Service
 public class ProcessPaymentService implements ProcessPaymentUseCase {
@@ -63,6 +73,7 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
     var payment =
         new Payment(
             UUID.randomUUID(),
+<<<<<<< HEAD
             workOrderId,
             paymentRequest.getCustomerId(),
             paymentRequest.getAmount());
@@ -79,12 +90,29 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
       // Race condition or constraint violation
       log.info(
           "Concurrent duplicate or constraint violation detected for workOrderId: {}. Fetching existing payment.",
+=======
+            paymentRequest.getBudgetId(),
+            workOrderId,
+            paymentRequest.getClientId(),
+            new BigDecimal(paymentRequest.getOrderRequest().getTotalAmount()));
+
+    // Save initial payment (constraint violation check - second line of defense)
+    try {
+      payment = paymentRepository.save(payment);
+      log.info(
+          "Payment created successfully: paymentId={}, workOrderId={}", payment.getId(), workOrderId);
+    } catch (DataIntegrityViolationException e) {
+      // Race condition: another instance created payment between our check and save
+      log.info(
+          "Concurrent duplicate detected by database constraint for workOrderId: {}. Fetching existing payment.",
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
           workOrderId);
       return paymentRepository
           .findByWorkOrderId(workOrderId)
           .orElseThrow(
               () ->
                   new PaymentProcessingException(
+<<<<<<< HEAD
                       "Payment saving failed but payment not found for workOrderId: "
                           + workOrderId));
     }
@@ -150,5 +178,68 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
       throw new PaymentProcessingException(
           "Failed to process payment for order " + paymentRequest.getWorkOrderId(), e);
     }
+=======
+                      "Payment constraint violation but payment not found for workOrderId: "
+                          + workOrderId));
+    }
+
+    try {
+      // Process payment through Mercado Pago (PIX)
+      var processedPayment =
+          paymentGateway.processPixPayment(
+              new BigDecimal(paymentRequest.getOrderRequest().getTotalAmount()),
+              null,
+              paymentRequest.getDescription() != null
+                  ? paymentRequest.getDescription()
+                  : "Payment for order " + paymentRequest.getWorkOrderId());
+
+      // Update payment with gateway response
+      payment.markAsProcessing(
+          processedPayment.getExternalPaymentId(),
+          processedPayment.getOrderPaymentId(),
+          processedPayment.getPaymentMethod(),
+          processedPayment.getQrCode(),
+          processedPayment.getQrCodeBase64());
+
+      // Query payment order status to get most up-to-date information
+      try {
+        log.info("Querying order status from Mercado Pago for payment: {}", payment.getId());
+        Payment queryResult =
+            paymentOrderQuery.getOrderStatus(processedPayment.getOrderPaymentId());
+
+        // Update payment with queried status
+        if (queryResult.getStatus() == PaymentStatus.APPROVED) {
+          payment.markAsApproved();
+          log.info("Payment approved after status query: {}", payment.getId());
+        } else if (queryResult.getStatus() == PaymentStatus.REJECTED) {
+          payment.markAsRejected(queryResult.getErrorMessage());
+          log.info("Payment rejected after status query: {}", payment.getId());
+        }
+        // If status is PROCESSING, keep current state
+      } catch (Exception e) {
+        log.warn("Failed to query payment status, using initial response status", e);
+        // Fallback to initial gateway response if query fails
+        if (processedPayment.getStatus() != PaymentStatus.APPROVED) {
+          payment.markAsRejected(processedPayment.getErrorMessage());
+        } else {
+          payment.markAsApproved();
+        }
+      }
+
+      // Save updated payment
+      payment = paymentRepository.save(payment);
+
+      // Send payment response to message queue
+      paymentResponseMessage.sendPaymentResponse(payment);
+
+      return payment;
+
+    } catch (Exception e) {
+      payment.markAsFailed(e.getMessage());
+      paymentRepository.save(payment);
+      throw new PaymentProcessingException(
+          "Failed to process payment for order " + paymentRequest.getWorkOrderId(), e);
+    }
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   }
 }

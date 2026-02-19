@@ -17,10 +17,17 @@ public class PaymentEntity {
   // Unique identifier for the payment
   private UUID id;
 
+<<<<<<< HEAD
   // Budget reference (logical reference to another service)
   private UUID budgetId;
 
   // Partition Key: Work order ID (ensures uniqueness and enables efficient queries)
+=======
+  @Column(nullable = false)
+  private UUID budgetId;
+
+  @Column(nullable = false, unique = true)
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   private UUID workOrderId;
 
   // Sort Key: Creation timestamp (enables range queries and temporal ordering)
@@ -37,11 +44,15 @@ public class PaymentEntity {
 
   // Mercado Pago external payment ID (for lookups via GSI)
   private String externalPaymentId;
+<<<<<<< HEAD
 
   // Internal payment order ID
   private String orderPaymentId;
 
   // Payment method (default: pix)
+=======
+  private String orderPaymentId;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   private String paymentMethod = "pix";
 
   // QR code string representation
@@ -73,7 +84,10 @@ public class PaymentEntity {
     this.id = id;
   }
 
+<<<<<<< HEAD
   @DynamoDbAttribute("budgetId")
+=======
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   public UUID getBudgetId() {
     return budgetId;
   }
@@ -82,8 +96,11 @@ public class PaymentEntity {
     this.budgetId = budgetId;
   }
 
+<<<<<<< HEAD
   @DynamoDbPartitionKey
   @DynamoDbAttribute("workOrderId")
+=======
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   public UUID getWorkOrderId() {
     return workOrderId;
   }
@@ -179,6 +196,7 @@ public class PaymentEntity {
     this.qrCodeBase64 = qrCodeBase64;
   }
 
+<<<<<<< HEAD
   @DynamoDbAttribute("processedAtEpoch")
   public Long getProcessedAtEpoch() {
     return processedAtEpoch;
@@ -228,5 +246,13 @@ public class PaymentEntity {
           java.time.Instant.from(processedAt.atZone(java.time.ZoneId.systemDefault()))
               .toEpochMilli();
     }
+=======
+  public String getOrderPaymentId() {
+    return orderPaymentId;
+  }
+
+  public void setOrderPaymentId(String orderPaymentId) {
+    this.orderPaymentId = orderPaymentId;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
   }
 }

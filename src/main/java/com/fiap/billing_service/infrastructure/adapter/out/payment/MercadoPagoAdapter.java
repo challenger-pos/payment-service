@@ -35,6 +35,7 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
   public MercadoPagoAdapter(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
+<<<<<<< HEAD
 
   @PostConstruct
   public void init() {
@@ -81,6 +82,46 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
           restTemplate.exchange(
               ORDERS_API_URL, HttpMethod.POST, requestEntity, MercadoPagoOrderResponse.class);
 
+=======
+
+  @PostConstruct
+  public void init() {
+    log.info("Mercado Pago adapter initialized with Orders API");
+  }
+
+  @Override
+  public PaymentResponse processPixPayment(BigDecimal amount, String email, String description) {
+    log.info(
+        "Processing PIX payment through Mercado Pago Orders API: amount={}, email={}",
+        amount,
+        email);
+
+    try {
+      // Generate unique reference ID
+      String externalReference = "order_ref_" + UUID.randomUUID();
+
+      // Use provided email or default
+      String payerEmail = email != null && !email.isEmpty() ? email : "test@testuser.com";
+
+      // Create order request
+      MercadoPagoOrderRequest orderRequest =
+          new MercadoPagoOrderRequest(externalReference, amount, payerEmail);
+
+      // Set up headers with Authorization and X-Idempotency-Key
+      HttpHeaders headers = new HttpHeaders();
+      headers.set("Authorization", "Bearer " + accessToken);
+      headers.set("X-Idempotency-Key", UUID.randomUUID().toString());
+      headers.set("Content-Type", "application/json");
+
+      HttpEntity<MercadoPagoOrderRequest> requestEntity = new HttpEntity<>(orderRequest, headers);
+
+      // Make API call
+      log.info("Calling Mercado Pago Orders API with idempotency key");
+      ResponseEntity<MercadoPagoOrderResponse> responseEntity =
+          restTemplate.exchange(
+              ORDERS_API_URL, HttpMethod.POST, requestEntity, MercadoPagoOrderResponse.class);
+
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
       MercadoPagoOrderResponse orderResponse = responseEntity.getBody();
 
       if (orderResponse == null) {
@@ -126,12 +167,15 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
         errorMessage = orderResponse.getTransactions().getPayments()[0].getStatusDetail();
       }
 
+<<<<<<< HEAD
       if (span != null) {
         span.setTag("payment.order_id", orderId);
         span.setTag("payment.payment_id", paymentId);
         span.setTag("payment.status", status.name());
       }
 
+=======
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
       log.info(
           "PIX payment processed: orderId={}, paymentId={}, status={}", orderId, paymentId, status);
 
@@ -146,6 +190,7 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
   private PaymentStatus mapStatus(String mpStatus) {
     if (mpStatus == null) {
+<<<<<<< HEAD
       return PaymentStatus.REJECTED;
     }
 
@@ -154,6 +199,16 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
       case "waiting_transfer", "cancelled" -> PaymentStatus.REJECTED;
       case "pending", "processing" -> PaymentStatus.PROCESSING;
       default -> PaymentStatus.REJECTED;
+=======
+      return PaymentStatus.PROCESSING;
+    }
+
+    return switch (mpStatus.toLowerCase()) {
+      case "approved", "processed" -> PaymentStatus.APPROVED;
+      case "rejected", "cancelled" -> PaymentStatus.REJECTED;
+      case "pending", "processing" -> PaymentStatus.PROCESSING;
+      default -> PaymentStatus.PROCESSING;
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     };
   }
 }

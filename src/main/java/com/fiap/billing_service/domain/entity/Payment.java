@@ -32,6 +32,9 @@ public class Payment {
   public UUID getId() {
     return id;
   }
+  public UUID getId() {
+    return id;
+  }
 
   public UUID getWorkOrderId() {
     return workOrderId;
@@ -44,7 +47,13 @@ public class Payment {
   public BigDecimal getAmount() {
     return amount;
   }
+  public BigDecimal getAmount() {
+    return amount;
+  }
 
+  public PaymentStatus getStatus() {
+    return status;
+  }
   public PaymentStatus getStatus() {
     return status;
   }
@@ -56,7 +65,17 @@ public class Payment {
   public String getOrderPaymentId() {
     return orderPaymentId;
   }
+  public String getExternalPaymentId() {
+    return externalPaymentId;
+  }
 
+  public String getOrderPaymentId() {
+    return orderPaymentId;
+  }
+
+  public String getPaymentMethod() {
+    return paymentMethod;
+  }
   public String getPaymentMethod() {
     return paymentMethod;
   }
@@ -64,7 +83,13 @@ public class Payment {
   public LocalDateTime getCreatedAt() {
     return createdAt;
   }
+  public LocalDateTime getCreatedAt() {
+    return createdAt;
+  }
 
+  public LocalDateTime getProcessedAt() {
+    return processedAt;
+  }
   public LocalDateTime getProcessedAt() {
     return processedAt;
   }
@@ -72,7 +97,13 @@ public class Payment {
   public String getErrorMessage() {
     return errorMessage;
   }
+  public String getErrorMessage() {
+    return errorMessage;
+  }
 
+  public String getQrCode() {
+    return qrCode;
+  }
   public String getQrCode() {
     return qrCode;
   }
@@ -80,7 +111,23 @@ public class Payment {
   public String getQrCodeBase64() {
     return qrCodeBase64;
   }
+  public String getQrCodeBase64() {
+    return qrCodeBase64;
+  }
 
+  public void markAsProcessing(
+      String externalPaymentId,
+      String orderPaymentId,
+      String paymentMethod,
+      String qrCode,
+      String qrCodeBase64) {
+    this.status = PaymentStatus.PROCESSING;
+    this.externalPaymentId = externalPaymentId;
+    this.orderPaymentId = orderPaymentId;
+    this.paymentMethod = paymentMethod;
+    this.qrCode = qrCode;
+    this.qrCodeBase64 = qrCodeBase64;
+  }
   public void markAsProcessing(
       String externalPaymentId,
       String orderPaymentId,
@@ -99,13 +146,27 @@ public class Payment {
     this.status = PaymentStatus.APPROVED;
     this.processedAt = LocalDateTime.now();
   }
+  public void markAsApproved() {
+    this.status = PaymentStatus.APPROVED;
+    this.processedAt = LocalDateTime.now();
+  }
 
   public void markAsRejected(String errorMessage) {
     this.status = PaymentStatus.REJECTED;
     this.errorMessage = errorMessage;
     this.processedAt = LocalDateTime.now();
   }
+  public void markAsRejected(String errorMessage) {
+    this.status = PaymentStatus.REJECTED;
+    this.errorMessage = errorMessage;
+    this.processedAt = LocalDateTime.now();
+  }
 
+  public void markAsFailed(String errorMessage) {
+    this.status = PaymentStatus.FAILED;
+    this.errorMessage = errorMessage;
+    this.processedAt = LocalDateTime.now();
+  }
   public void markAsFailed(String errorMessage) {
     this.status = PaymentStatus.FAILED;
     this.errorMessage = errorMessage;

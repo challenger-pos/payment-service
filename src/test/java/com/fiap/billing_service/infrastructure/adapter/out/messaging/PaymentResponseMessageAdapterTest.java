@@ -65,7 +65,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -94,7 +100,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -122,7 +134,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -150,7 +168,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -178,7 +202,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -196,13 +226,23 @@ class PaymentResponseMessageAdapterTest {
   void testSendPaymentResponse_SerializesAllFields() throws Exception {
     // Arrange
     UUID paymentId = UUID.randomUUID();
+<<<<<<< HEAD
     UUID workOrderId = UUID.randomUUID();
     UUID customerId = UUID.randomUUID();
+=======
+    UUID budgetId = UUID.randomUUID();
+    UUID workOrderId = UUID.randomUUID();
+    UUID clientId = UUID.randomUUID();
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     BigDecimal amount = new BigDecimal("150.00");
     LocalDateTime createdAt = LocalDateTime.now();
     LocalDateTime processedAt = LocalDateTime.now();
 
+<<<<<<< HEAD
     Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
+=======
+    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     payment.markAsProcessing("ext_123", "order_456", "PIX", "qr_code_data", "qr_base64");
     payment.markAsApproved();
 
@@ -216,12 +256,23 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
 
+<<<<<<< HEAD
     ArgumentCaptor<Map<String, Object>> messageCaptor = ArgumentCaptor.forClass(Map.class);
+=======
+    ArgumentCaptor<Map<String, Object>> messageCaptor =
+        ArgumentCaptor.forClass(Map.class);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Act
     adapter.sendPaymentResponse(payment);
@@ -232,8 +283,14 @@ class PaymentResponseMessageAdapterTest {
 
     org.assertj.core.api.Assertions.assertThat(capturedMessage)
         .containsEntry("paymentId", paymentId.toString())
+<<<<<<< HEAD
         .containsEntry("workOrderId", workOrderId.toString())
         .containsEntry("customerId", customerId.toString())
+=======
+        .containsEntry("budgetId", budgetId.toString())
+        .containsEntry("workOrderId", workOrderId.toString())
+        .containsEntry("clientId", clientId.toString())
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
         .containsEntry("status", "APPROVED")
         .containsEntry("amount", amount)
         .containsEntry("externalPaymentId", "ext_123")
@@ -244,7 +301,12 @@ class PaymentResponseMessageAdapterTest {
 
   @Test
   @DisplayName("Should not throw exception when SQS client throws")
+<<<<<<< HEAD
   void testSendPaymentResponse_SQSClientThrowsException_DoesNotPropagate() throws Exception {
+=======
+  void testSendPaymentResponse_SQSClientThrowsException_DoesNotPropagate()
+      throws Exception {
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     // Arrange
     Payment payment = createPaymentWithStatus(PaymentStatus.APPROVED);
 
@@ -259,7 +321,12 @@ class PaymentResponseMessageAdapterTest {
 
   @Test
   @DisplayName("Should not throw exception when JSON serialization fails")
+<<<<<<< HEAD
   void testSendPaymentResponse_JsonSerializationFails_DoesNotPropagate() throws Exception {
+=======
+  void testSendPaymentResponse_JsonSerializationFails_DoesNotPropagate()
+      throws Exception {
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     // Arrange
     Payment payment = createPaymentWithStatus(PaymentStatus.APPROVED);
 
@@ -285,7 +352,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenThrow(new RuntimeException("Failed to send message"));
@@ -310,7 +383,13 @@ class PaymentResponseMessageAdapterTest {
     lenient()
         .when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class)))
         .thenReturn(queueUrlResponse);
+<<<<<<< HEAD
     lenient().when(objectMapper.writeValueAsString(any())).thenReturn(messageJson);
+=======
+    lenient()
+        .when(objectMapper.writeValueAsString(any()))
+        .thenReturn(messageJson);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     lenient()
         .when(sqsClient.sendMessage(any(SendMessageRequest.class)))
         .thenReturn(sendMessageResponse);
@@ -333,11 +412,20 @@ class PaymentResponseMessageAdapterTest {
 
   private Payment createPaymentWithStatus(PaymentStatus status) {
     UUID paymentId = UUID.randomUUID();
+<<<<<<< HEAD
     UUID workOrderId = UUID.randomUUID();
     UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("100.00");
 
     Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
+=======
+    UUID budgetId = UUID.randomUUID();
+    UUID workOrderId = UUID.randomUUID();
+    UUID clientId = UUID.randomUUID();
+    BigDecimal amount = new BigDecimal("100.00");
+
+    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     switch (status) {
       case APPROVED:

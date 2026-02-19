@@ -36,16 +36,20 @@ public class PaymentQueueListener {
    */
   @SqsListener("${aws.sqs.payment-request-queue}")
   public void receivePaymentRequest(String message) {
+<<<<<<< HEAD
     Span span = GlobalTracer.get().activeSpan();
     if (span != null) {
       span.setTag("operation.type", "receivePaymentRequest");
     }
 
+=======
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     log.info("Received payment request message from queue");
 
     try {
       // Parse the message
       PaymentRequestDto paymentRequest = objectMapper.readValue(message, PaymentRequestDto.class);
+<<<<<<< HEAD
       log.info("Parsed payment request: {}", paymentRequest);
 
       if (span != null) {
@@ -58,6 +62,14 @@ public class PaymentQueueListener {
           "Processing payment request - workOrderId: {}, clientId: {}",
           paymentRequest.getWorkOrderId(),
           paymentRequest.getCustomerId());
+=======
+
+      log.info(
+          "Processing payment request - workOrderId: {}, clientId: {}, budgetId: {}",
+          paymentRequest.getWorkOrderId(),
+          paymentRequest.getClientId(),
+          paymentRequest.getBudgetId());
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
       // Process the payment (idempotency handled by ProcessPaymentService)
       processPaymentUseCase.processPayment(paymentRequest);

@@ -30,10 +30,16 @@ class MercadoPagoOrderRequestTest {
     String externalReference = "ext_order_123";
     BigDecimal amount = new BigDecimal("150.00");
     String email = "customer@example.com";
+<<<<<<< HEAD
     String firstName = "APRO";
 
     // Act
     request = new MercadoPagoOrderRequest(externalReference, amount, email, firstName);
+=======
+
+    // Act
+    request = new MercadoPagoOrderRequest(externalReference, amount, email);
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Assert
     assertThat(request.getExternalReference()).isEqualTo(externalReference);
@@ -110,8 +116,15 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should construct nested Transactions with payments array")
   void testTransactions_Constructor_StoresPayments() {
     // Arrange
+<<<<<<< HEAD
     MercadoPagoOrderRequest.Payment payment1 = new MercadoPagoOrderRequest.Payment("100.00");
     MercadoPagoOrderRequest.Payment payment2 = new MercadoPagoOrderRequest.Payment("50.00");
+=======
+    MercadoPagoOrderRequest.Payment payment1 =
+        new MercadoPagoOrderRequest.Payment("100.00");
+    MercadoPagoOrderRequest.Payment payment2 =
+        new MercadoPagoOrderRequest.Payment("50.00");
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     MercadoPagoOrderRequest.Payment[] payments = {payment1, payment2};
 
     // Act
@@ -128,7 +141,12 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should set and get transactions")
   void testSetTransactions() {
     // Arrange
+<<<<<<< HEAD
     MercadoPagoOrderRequest.Payment payment = new MercadoPagoOrderRequest.Payment("75.00");
+=======
+    MercadoPagoOrderRequest.Payment payment =
+        new MercadoPagoOrderRequest.Payment("75.00");
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
     MercadoPagoOrderRequest.Transactions transactions =
         new MercadoPagoOrderRequest.Transactions(new MercadoPagoOrderRequest.Payment[] {payment});
 
@@ -187,9 +205,13 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should construct complete order request with nested objects")
   void testFullOrderConstruction_BuildsCompleteObjectGraph() {
     // Act
+<<<<<<< HEAD
     request =
         new MercadoPagoOrderRequest(
             "order_789", new BigDecimal("299.99"), "buyer@test.com", "APRO");
+=======
+    request = new MercadoPagoOrderRequest("order_789", new BigDecimal("299.99"), "buyer@test.com");
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 
     // Assert - verify entire object graph
     assertThat(request.getType()).isEqualTo("online");

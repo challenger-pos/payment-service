@@ -8,6 +8,17 @@ spring:
   main:
     allow-circular-references: false
 
+<<<<<<< HEAD
+=======
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    clean-disabled: true
+    out-of-order: false
+
+>>>>>>> 874da5d659f8f0227b13a5ef37e537fd54c18408
 server:
   port: 8080
 
