@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fiap.billing_service.application.port.in.ProcessPaymentUseCase;
 import com.fiap.billing_service.infrastructure.adapter.in.messaging.dto.PaymentRequestDto;
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,12 +36,23 @@ public class PaymentQueueListener {
    */
   @SqsListener("${aws.sqs.payment-request-queue}")
   public void receivePaymentRequest(String message) {
+    Span span = GlobalTracer.get().activeSpan();
+    if (span != null) {
+      span.setTag("operation.type", "receivePaymentRequest");
+    }
+
     log.info("Received payment request message from queue");
 
     try {
       // Parse the message
       PaymentRequestDto paymentRequest = objectMapper.readValue(message, PaymentRequestDto.class);
       log.info("Parsed payment request: {}", paymentRequest);
+
+      if (span != null) {
+        span.setTag("payment.work_order_id", paymentRequest.getWorkOrderId());
+        span.setTag("payment.client_id", paymentRequest.getClientId());
+        span.setTag("payment.budget_id", paymentRequest.getBudgetId());
+      }
 
       log.info(
           "Processing payment request - workOrderId: {}, clientId: {}",

@@ -34,6 +34,11 @@ aws:
     auto-create-queue: false
     max-receive-count: 3
 
+# Datadog (disabled in dev)
+dd:
+  trace:
+    enabled: false
+
 # Mercado Pago Configuration
 mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}

@@ -132,3 +132,16 @@ variable "hpa_cpu_target" {
   type        = number
   default     = 70
 }
+
+# DATADOG
+variable "datadog_agent_host" {
+  description = "Hostname do Datadog Agent no cluster"
+  type        = string
+  default     = "datadog-agent.default.svc.cluster.local"
+}
+
+variable "app_version" {
+  description = "Versão da aplicação (DD_VERSION e labels Datadog)"
+  type        = string
+  default     = "1.0.0"
+}
