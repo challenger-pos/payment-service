@@ -48,7 +48,9 @@
         <sonar.projectName>Billing Service</sonar.projectName>
         <sonar.sources>src/main</sonar.sources>
         <sonar.tests>src/test</sonar.tests>
-        <sonar.coverage.exclusions>**/*Config.java,**/*Application.java,**/*Exception.java,**/*Dto.java,**/*Request.java,**/*Response.java,**/*Method.java,**/*Payer.java,**/*Payment.java,**/*TransactionData.java,**/*Transactions.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>
+            **/*Config.java,**/*Application.java,**/*Exception.java,**/*Dto.java,**/*Request.java,**/*Response.java,**/*Method.java,**/*Payer.java,**/*Payment.java,**/*TransactionData.java,**/*Transactions.java
+        </sonar.coverage.exclusions>
         <!-- JaCoCo Properties -->
         <jacoco.maven.plugin.version>0.8.11</jacoco.maven.plugin.version>
     </properties>
@@ -273,11 +275,19 @@
             </plugin>
 
             <!-- Maven Failsafe Report Plugin -->
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                <artifactId>maven-failsafe-report-plugin</artifactId>-->
-            <!--                <version>3.2.5</version>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.5.4</version> <!-- Use the latest version available -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
