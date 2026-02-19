@@ -38,7 +38,7 @@ data "terraform_remote_state" "eks" {
   backend = "s3"
   config = {
     bucket = "tf-state-challenge-bucket"
-    key    = var.eks_state_key
+    key    = local.eks_state_key
     region = var.region
   }
 }
@@ -47,7 +47,7 @@ data "terraform_remote_state" "dynamodb_billing" {
   backend = "s3"
   config = {
     bucket = "tf-state-challenge-bucket"
-    key    = var.dynamodb_state_key
+    key    = local.dynamodb_state_key
     region = var.region
   }
 }
