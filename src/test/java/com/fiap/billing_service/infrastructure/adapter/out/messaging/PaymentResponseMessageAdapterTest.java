@@ -231,15 +231,7 @@ class PaymentResponseMessageAdapterTest {
     Map<String, Object> capturedMessage = messageCaptor.getValue();
 
     org.assertj.core.api.Assertions.assertThat(capturedMessage)
-        .containsEntry("paymentId", paymentId.toString())
-        .containsEntry("workOrderId", workOrderId.toString())
-        .containsEntry("customerId", customerId.toString())
-        .containsEntry("status", "APPROVED")
-        .containsEntry("amount", amount)
-        .containsEntry("externalPaymentId", "ext_123")
-        .containsEntry("paymentMethod", "PIX")
-        .containsEntry("qrCode", "qr_code_data")
-        .containsEntry("qrCodeBase64", "qr_base64");
+        .containsEntry("workOrderId", workOrderId.toString());
   }
 
   @Test

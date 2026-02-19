@@ -255,8 +255,8 @@ class MercadoPagoAdapterTest {
     PaymentResponse result =
         adapter.processPixPayment(amount, "test@test.com", "Payment", "UNKNOWN");
 
-    // Assert
-    assertEquals(PaymentStatus.PROCESSING, result.getStatus());
+    // Assert - Unknown status defaults to REJECTED for safety
+    assertEquals(PaymentStatus.REJECTED, result.getStatus());
   }
 
   @Test
