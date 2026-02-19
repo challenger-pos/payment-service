@@ -44,6 +44,11 @@ mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
   public-key: ${MERCADOPAGO_PUBLIC_KEY}
 
+# Datadog (disabled in dev)
+dd:
+  trace:
+    enabled: false
+
 # Actuator Configuration for Development
 management:
   endpoint:

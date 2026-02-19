@@ -1,5 +1,7 @@
 package com.fiap.billing_service.infrastructure.adapter.in.web.controller;
 
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -22,6 +24,10 @@ public class HealthController {
 
     @GetMapping
     public ResponseEntity<Map<String, String>> health() {
+        Span span = GlobalTracer.get().activeSpan();
+        if (span != null) {
+            span.setTag("operation.type", "health");
+        }
         String correlationId = MDC.get("correlationId");
         log.debug("[CorrelationId: {}] Health check requested", correlationId);
         

@@ -41,6 +41,24 @@ management:
 dynamodb:
   table-name: ${AWS_DYNAMODB_TABLE_NAME:payments}
 
+# Datadog Tracing
+dd:
+  service: payment-service
+  trace:
+    enabled: true
+    http:
+      client:
+        tag:
+          query-string: true
+    logs:
+      injection: true
+
+# Datadog StatsD (custom metrics)
+datadog:
+  statsd:
+    host: ${DATADOG_STATSD_HOST:localhost}
+    port: ${DATADOG_STATSD_PORT:8125}
+
 aws:
   region: ${AWS_REGION:us-east-2}
   dynamodb:

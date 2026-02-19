@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: payment
+  labels:
+    app: payment-service
+    tags.datadoghq.com/env: dev
+    tags.datadoghq.com/service: payment-service
+    tags.datadoghq.com/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+        tags.datadoghq.com/env: dev
+        tags.datadoghq.com/service: payment-service
+        tags.datadoghq.com/version: "1.0.0"
+        admission.datadoghq.com/enabled: "true"
+    spec:
+      volumes:
+        - name: dd-java-agent
+          emptyDir: {}
+
+      initContainers:
+        - name: dd-java-agent-init
+          image: curlimages/curl:8.10.1
+          command:
+            - sh
+            - -c
+            - curl -L -o /dd/dd-java-agent.jar https://dtdg.co/latest-java-tracer
+          volumeMounts:
+            - name: dd-java-agent
+              mountPath: /dd
+
+      containers:
+        - name: payment-service
+          image: REPLACE_IMAGE
+          imagePullPolicy: Always
+
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/dd/dd-java-agent.jar"
+            - name: DD_SERVICE
+              value: "payment-service"
+            - name: DD_ENV
+              value: "dev"
+            - name: DD_VERSION
+              value: "1.0.0"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_AGENT_HOST
+              value: "datadog-agent.default.svc.cluster.local"
+            - name: DD_DOGSTATSD_PORT
+              value: "8125"
+            - name: DATADOG_STATSD_HOST
+              value: "datadog-agent.default.svc.cluster.local"
+            - name: DATADOG_STATSD_PORT
+              value: "8125"
+
+          volumeMounts:
+            - name: dd-java-agent
+              mountPath: /dd
+
+          ports:
+            - containerPort: 8080
+
+          envFrom:
+            - configMapRef:
+                name: payment-service-config
+            - secretRef:
+                name: payment-service-secret
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

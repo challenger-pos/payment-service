@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+  namespace: payment
+data:
+  # Spring Boot
+  SPRING_PROFILES_ACTIVE: "homologation"
+  SERVER_PORT: "8080"
+
+  # AWS
+  AWS_REGION: "us-east-2"
+  AWS_DYNAMODB_TABLE_NAME: "payments-homolog"
+  AWS_DYNAMODB_ENDPOINT: ""
+
+  # SQS queue names
+  AWS_SQS_PAYMENT_REQUEST_QUEUE: "payment-request-queue"
+  AWS_SQS_PAYMENT_RESPONSE_SUCCESS_QUEUE: "payment-response-success-queue"
+  AWS_SQS_PAYMENT_RESPONSE_FAILURE_QUEUE: "payment-response-failure-queue"
+
+  # Actuator
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+
+  # Datadog
+  DD_TRACE_ENABLED: "true"
+  DD_SERVICE: "payment-service"
+  DD_TRACE_HTTP_CLIENT_TAG_QUERY_STRING: "true"
+  DD_TRACE_LOGS_INJECTION: "true"
+  DATADOG_STATSD_HOST: "datadog-agent.default.svc.cluster.local"
+  DATADOG_STATSD_PORT: "8125"

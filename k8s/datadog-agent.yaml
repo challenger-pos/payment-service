@@ -1,0 +1,25 @@
+# Datadog Agent (cluster-level). Apply once per cluster (e.g. namespace default).
+# Create secret: kubectl create secret generic datadog-secret -n default --from-literal=api-key=YOUR_DD_API_KEY
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+  namespace: default
+spec:
+  global:
+    site: us5.datadoghq.com
+    credentials:
+      apiSecret:
+        secretName: datadog-secret
+        keyName: api-key
+
+  features:
+    apm:
+      enabled: true
+
+    logCollection:
+      enabled: true
+      containerCollectAll: true
+
+    admissionController:
+      enabled: true

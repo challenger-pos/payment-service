@@ -5,6 +5,8 @@ import com.fiap.billing_service.domain.dto.PaymentResponse;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
 import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderRequest;
 import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderResponse;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -41,6 +43,13 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
   @Override
   public PaymentResponse processPixPayment(BigDecimal amount, String email, String description) {
+    Span span = GlobalTracer.get().activeSpan();
+    if (span != null) {
+      span.setTag("operation.type", "processPixPayment");
+      span.setTag("payment.amount", amount != null ? amount.toString() : "0");
+      span.setTag("payment.provider", "mercadopago");
+    }
+
     log.info(
         "Processing PIX payment through Mercado Pago Orders API: amount={}, email={}",
         amount,
@@ -114,6 +123,12 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
           && orderResponse.getTransactions().getPayments() != null
           && orderResponse.getTransactions().getPayments().length > 0) {
         errorMessage = orderResponse.getTransactions().getPayments()[0].getStatusDetail();
+      }
+
+      if (span != null) {
+        span.setTag("payment.order_id", orderId);
+        span.setTag("payment.payment_id", paymentId);
+        span.setTag("payment.status", status.name());
       }
 
       log.info(
