@@ -8,7 +8,6 @@ import com.fiap.billing_service.domain.entity.Payment;
 import com.fiap.billing_service.infrastructure.adapter.out.persistence.entity.PaymentEntity;
 import com.fiap.billing_service.infrastructure.adapter.out.persistence.mapper.PaymentMapper;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,22 +23,19 @@ import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 /**
  * Unit tests for PaymentRepositoryAdapter with mocked DynamoDB client.
- * 
- * These tests verify the adapter logic without requiring a running DynamoDB instance.
- * For integration tests with real DynamoDB, use docker-compose.yml with DynamoDB Local.
+ *
+ * <p>These tests verify the adapter logic without requiring a running DynamoDB instance. For
+ * integration tests with real DynamoDB, use docker-compose.yml with DynamoDB Local.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentRepositoryAdapter Unit Tests")
 class PaymentRepositoryAdapterTest {
 
-  @Mock
-  private DynamoDbEnhancedClient dynamoDbEnhancedClient;
+  @Mock private DynamoDbEnhancedClient dynamoDbEnhancedClient;
 
-  @Mock
-  private PaymentMapper paymentMapper;
+  @Mock private PaymentMapper paymentMapper;
 
-  @Mock
-  private DynamoDbTable<PaymentEntity> mockTable;
+  @Mock private DynamoDbTable<PaymentEntity> mockTable;
 
   private PaymentRepositoryAdapter adapter;
 
@@ -53,12 +49,11 @@ class PaymentRepositoryAdapterTest {
   void testSave_SavesPayment_ReturnsPayment() {
     // Arrange
     UUID paymentId = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("100.00");
 
-    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+    Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
     PaymentEntity paymentEntity = new PaymentEntity();
 
     when(paymentMapper.toEntity(payment)).thenReturn(paymentEntity);
@@ -75,8 +70,9 @@ class PaymentRepositoryAdapterTest {
   @DisplayName("Should call mapper to convert payment to entity before saving")
   void testSave_CallsMapperBeforeSaving() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), new BigDecimal("50.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("50.00"));
     PaymentEntity paymentEntity = new PaymentEntity();
 
     when(paymentMapper.toEntity(payment)).thenReturn(paymentEntity);
@@ -95,12 +91,11 @@ class PaymentRepositoryAdapterTest {
   void testSave_PreservesPaymentData() {
     // Arrange
     UUID paymentId = UUID.randomUUID();
-    UUID budgetId = UUID.randomUUID();
     UUID workOrderId = UUID.randomUUID();
-    UUID clientId = UUID.randomUUID();
+    UUID customerId = UUID.randomUUID();
     BigDecimal amount = new BigDecimal("150.00");
 
-    Payment payment = new Payment(paymentId, budgetId, workOrderId, clientId, amount);
+    Payment payment = new Payment(paymentId, workOrderId, customerId, amount);
     when(paymentMapper.toEntity(payment)).thenReturn(new PaymentEntity());
 
     // Act
@@ -108,9 +103,8 @@ class PaymentRepositoryAdapterTest {
 
     // Assert
     assertThat(result.getId()).isEqualTo(paymentId);
-    assertThat(result.getBudgetId()).isEqualTo(budgetId);
     assertThat(result.getWorkOrderId()).isEqualTo(workOrderId);
-    assertThat(result.getClientId()).isEqualTo(clientId);
+    assertThat(result.getCustomerId()).isEqualTo(customerId);
     assertThat(result.getAmount()).isEqualTo(amount);
   }
 
@@ -120,8 +114,8 @@ class PaymentRepositoryAdapterTest {
     // Arrange
     UUID workOrderId = UUID.randomUUID();
     PaymentEntity paymentEntity = new PaymentEntity();
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), workOrderId,
-        UUID.randomUUID(), new BigDecimal("100.00"));
+    Payment payment =
+        new Payment(UUID.randomUUID(), workOrderId, UUID.randomUUID(), new BigDecimal("100.00"));
 
     when(paymentMapper.toDomain(paymentEntity)).thenReturn(payment);
 
@@ -150,10 +144,12 @@ class PaymentRepositoryAdapterTest {
   @DisplayName("Should handle multiple saves of different payments")
   void testSave_MultipleDifferentPayments() {
     // Arrange
-    Payment payment1 = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), new BigDecimal("100.00"));
-    Payment payment2 = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), new BigDecimal("200.00"));
+    Payment payment1 =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("100.00"));
+    Payment payment2 =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("200.00"));
 
     when(paymentMapper.toEntity(any())).thenReturn(new PaymentEntity());
 
@@ -171,14 +167,14 @@ class PaymentRepositoryAdapterTest {
   @DisplayName("Should throw DynamoDbException when save fails")
   void testSave_ThrowsException_WhenDynamoDbFails() {
     // Arrange
-    Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        UUID.randomUUID(), new BigDecimal("100.00"));
+    Payment payment =
+        new Payment(
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("100.00"));
     PaymentEntity paymentEntity = new PaymentEntity();
 
     when(paymentMapper.toEntity(payment)).thenReturn(paymentEntity);
-    when(paymentMapper.toDomain(any())).thenThrow(
-        DynamoDbException.builder().message("DynamoDB Error").build()
-    );
+    when(paymentMapper.toDomain(any()))
+        .thenThrow(DynamoDbException.builder().message("DynamoDB Error").build());
 
     // Act & Assert
     assertThat(adapter.save(payment)).isEqualTo(payment);

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import com.fiap.billing_service.domain.dto.PaymentResponse;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
-import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderRequest;
 import com.fiap.billing_service.infrastructure.adapter.out.payment.dto.MercadoPagoOrderResponse;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,16 +43,22 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.50");
     String email = "customer@example.com";
     String description = "Test PIX payment";
+    String firstName = "John";
 
-    MercadoPagoOrderResponse response = createValidOrderResponse("approved", "qr_code_123", "qr_code_base64_xyz");
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    MercadoPagoOrderResponse response =
+        createValidOrderResponse("approved", "qr_code_123", "qr_code_base64_xyz");
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, email, description);
+    PaymentResponse result = adapter.processPixPayment(amount, email, description, firstName);
 
     // Assert
     assertNotNull(result);
@@ -66,7 +71,11 @@ class MercadoPagoAdapterTest {
     assertNull(result.getErrorMessage());
 
     verify(restTemplate, times(1))
-        .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class));
+        .exchange(
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class));
   }
 
   @Test
@@ -75,21 +84,30 @@ class MercadoPagoAdapterTest {
     // Arrange
     BigDecimal amount = new BigDecimal("50.00");
     String email = "test@test.com";
+    String firstName = "APRO";
 
     MercadoPagoOrderResponse response = createValidOrderResponse("approved", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, email, "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, email, "Payment", firstName);
 
     // Assert
     assertEquals(PaymentStatus.APPROVED, result.getStatus());
     verify(restTemplate, times(1))
-        .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class));
+        .exchange(
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class));
   }
 
   @Test
@@ -99,14 +117,18 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("50.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("processed", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "APRO");
 
     // Assert
     assertEquals(PaymentStatus.APPROVED, result.getStatus());
@@ -118,15 +140,20 @@ class MercadoPagoAdapterTest {
     // Arrange
     BigDecimal amount = new BigDecimal("100.00");
 
-    MercadoPagoOrderResponse response = createOrderResponseWithRejection("rejected", "Insufficient funds");
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    MercadoPagoOrderResponse response =
+        createOrderResponseWithRejection("rejected", "Insufficient funds");
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "JOSE");
 
     // Assert
     assertEquals(PaymentStatus.REJECTED, result.getStatus());
@@ -140,14 +167,19 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("cancelled", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result =
+        adapter.processPixPayment(amount, "test@test.com", "Payment", "CANCELED");
 
     // Assert
     assertEquals(PaymentStatus.REJECTED, result.getStatus());
@@ -160,14 +192,18 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("pending", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "");
 
     // Assert
     assertEquals(PaymentStatus.PROCESSING, result.getStatus());
@@ -180,14 +216,19 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("processing", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result =
+        adapter.processPixPayment(amount, "test@test.com", "Payment", "PROCESSING");
 
     // Assert
     assertEquals(PaymentStatus.PROCESSING, result.getStatus());
@@ -200,14 +241,19 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("unknown_status", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result =
+        adapter.processPixPayment(amount, "test@test.com", "Payment", "UNKNOWN");
 
     // Assert
     assertEquals(PaymentStatus.PROCESSING, result.getStatus());
@@ -220,14 +266,18 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("approved", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, null, "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, null, "Payment", "JOSE");
 
     // Assert
     assertNotNull(result);
@@ -241,14 +291,18 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("approved", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "", "Payment", "");
 
     // Assert
     assertNotNull(result);
@@ -262,14 +316,18 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("approved", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "JOSE");
 
     // Assert
     assertEquals("payment_001", result.getExternalPaymentId());
@@ -281,17 +339,21 @@ class MercadoPagoAdapterTest {
   void testProcessPixPayment_NullResponse_ThrowsException() {
     // Arrange
     BigDecimal amount = new BigDecimal("100.00");
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = ResponseEntity.status(HttpStatus.CREATED).build();
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        ResponseEntity.status(HttpStatus.CREATED).build();
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act & Assert
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> adapter.processPixPayment(amount, "test@test.com", "Payment"));
+            () -> adapter.processPixPayment(amount, "test@test.com", "Payment", "JOSE"));
     assertTrue(exception.getMessage().contains("Empty response"));
   }
 
@@ -302,14 +364,17 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenThrow(new RuntimeException("Connection timeout"));
 
     // Act & Assert
     RuntimeException exception =
         assertThrows(
             RuntimeException.class,
-            () -> adapter.processPixPayment(amount, "test@test.com", "Payment"));
+            () -> adapter.processPixPayment(amount, "test@test.com", "Payment", "JOSE"));
     assertTrue(exception.getMessage().contains("Mercado Pago API error"));
   }
 
@@ -324,14 +389,18 @@ class MercadoPagoAdapterTest {
     response.setStatus("approved");
     response.setTransactions(null); // No transactions
 
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "");
 
     // Assert
     assertNotNull(result);
@@ -350,18 +419,23 @@ class MercadoPagoAdapterTest {
     response.setId("order_001");
     response.setStatus("approved");
 
-    MercadoPagoOrderResponse.Transactions transactions = new MercadoPagoOrderResponse.Transactions();
+    MercadoPagoOrderResponse.Transactions transactions =
+        new MercadoPagoOrderResponse.Transactions();
     transactions.setPayments(new MercadoPagoOrderResponse.Payment[0]); // Empty array
     response.setTransactions(transactions);
 
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "APRO");
 
     // Assert
     assertNotNull(result);
@@ -384,18 +458,23 @@ class MercadoPagoAdapterTest {
     payment.setStatus("approved");
     payment.setPointOfInteraction(null); // No POI
 
-    MercadoPagoOrderResponse.Transactions transactions = new MercadoPagoOrderResponse.Transactions();
+    MercadoPagoOrderResponse.Transactions transactions =
+        new MercadoPagoOrderResponse.Transactions();
     transactions.setPayments(new MercadoPagoOrderResponse.Payment[] {payment});
     response.setTransactions(transactions);
 
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment");
+    PaymentResponse result = adapter.processPixPayment(amount, "test@test.com", "Payment", "APRO");
 
     // Assert
     assertNotNull(result);
@@ -410,24 +489,33 @@ class MercadoPagoAdapterTest {
     BigDecimal amount = new BigDecimal("100.00");
 
     MercadoPagoOrderResponse response = createValidOrderResponse("approved", null, null);
-    ResponseEntity<MercadoPagoOrderResponse> httpResponse = new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
+    ResponseEntity<MercadoPagoOrderResponse> httpResponse =
+        new ResponseEntity<MercadoPagoOrderResponse>(response, HttpStatus.CREATED);
 
     when(restTemplate.exchange(
-            anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class)))
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class)))
         .thenReturn(httpResponse);
 
     // Act
-    adapter.processPixPayment(amount, "test@test.com", "Payment");
+    adapter.processPixPayment(amount, "test@test.com", "Payment", "");
 
     // Assert
     verify(restTemplate, times(1))
-        .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(MercadoPagoOrderResponse.class));
+        .exchange(
+            anyString(),
+            eq(HttpMethod.POST),
+            any(HttpEntity.class),
+            eq(MercadoPagoOrderResponse.class));
     // Headers are validated implicitly since the mock returns successfully
   }
 
   // Helper methods
 
-  private MercadoPagoOrderResponse createValidOrderResponse(String status, String qrCode, String qrCodeBase64) {
+  private MercadoPagoOrderResponse createValidOrderResponse(
+      String status, String qrCode, String qrCodeBase64) {
     MercadoPagoOrderResponse response = new MercadoPagoOrderResponse();
     response.setId("order_001");
     response.setStatus(status);
@@ -437,22 +525,26 @@ class MercadoPagoAdapterTest {
     payment.setStatus(status);
 
     if (qrCode != null || qrCodeBase64 != null) {
-      MercadoPagoOrderResponse.PointOfInteraction poi = new MercadoPagoOrderResponse.PointOfInteraction();
-      MercadoPagoOrderResponse.TransactionData txData = new MercadoPagoOrderResponse.TransactionData();
+      MercadoPagoOrderResponse.PointOfInteraction poi =
+          new MercadoPagoOrderResponse.PointOfInteraction();
+      MercadoPagoOrderResponse.TransactionData txData =
+          new MercadoPagoOrderResponse.TransactionData();
       txData.setQrCode(qrCode);
       txData.setQrCodeBase64(qrCodeBase64);
       poi.setTransactionData(txData);
       payment.setPointOfInteraction(poi);
     }
 
-    MercadoPagoOrderResponse.Transactions transactions = new MercadoPagoOrderResponse.Transactions();
+    MercadoPagoOrderResponse.Transactions transactions =
+        new MercadoPagoOrderResponse.Transactions();
     transactions.setPayments(new MercadoPagoOrderResponse.Payment[] {payment});
     response.setTransactions(transactions);
 
     return response;
   }
 
-  private MercadoPagoOrderResponse createOrderResponseWithRejection(String status, String errorMessage) {
+  private MercadoPagoOrderResponse createOrderResponseWithRejection(
+      String status, String errorMessage) {
     MercadoPagoOrderResponse response = new MercadoPagoOrderResponse();
     response.setId("order_001");
     response.setStatus(status);
@@ -462,7 +554,8 @@ class MercadoPagoAdapterTest {
     payment.setStatus(status);
     payment.setStatusDetail(errorMessage);
 
-    MercadoPagoOrderResponse.Transactions transactions = new MercadoPagoOrderResponse.Transactions();
+    MercadoPagoOrderResponse.Transactions transactions =
+        new MercadoPagoOrderResponse.Transactions();
     transactions.setPayments(new MercadoPagoOrderResponse.Payment[] {payment});
     response.setTransactions(transactions);
 

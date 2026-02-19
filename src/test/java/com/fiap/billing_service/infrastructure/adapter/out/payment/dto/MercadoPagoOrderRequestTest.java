@@ -30,9 +30,10 @@ class MercadoPagoOrderRequestTest {
     String externalReference = "ext_order_123";
     BigDecimal amount = new BigDecimal("150.00");
     String email = "customer@example.com";
+    String firstName = "APRO";
 
     // Act
-    request = new MercadoPagoOrderRequest(externalReference, amount, email);
+    request = new MercadoPagoOrderRequest(externalReference, amount, email, firstName);
 
     // Assert
     assertThat(request.getExternalReference()).isEqualTo(externalReference);
@@ -109,10 +110,8 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should construct nested Transactions with payments array")
   void testTransactions_Constructor_StoresPayments() {
     // Arrange
-    MercadoPagoOrderRequest.Payment payment1 =
-        new MercadoPagoOrderRequest.Payment("100.00");
-    MercadoPagoOrderRequest.Payment payment2 =
-        new MercadoPagoOrderRequest.Payment("50.00");
+    MercadoPagoOrderRequest.Payment payment1 = new MercadoPagoOrderRequest.Payment("100.00");
+    MercadoPagoOrderRequest.Payment payment2 = new MercadoPagoOrderRequest.Payment("50.00");
     MercadoPagoOrderRequest.Payment[] payments = {payment1, payment2};
 
     // Act
@@ -129,8 +128,7 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should set and get transactions")
   void testSetTransactions() {
     // Arrange
-    MercadoPagoOrderRequest.Payment payment =
-        new MercadoPagoOrderRequest.Payment("75.00");
+    MercadoPagoOrderRequest.Payment payment = new MercadoPagoOrderRequest.Payment("75.00");
     MercadoPagoOrderRequest.Transactions transactions =
         new MercadoPagoOrderRequest.Transactions(new MercadoPagoOrderRequest.Payment[] {payment});
 
@@ -189,7 +187,9 @@ class MercadoPagoOrderRequestTest {
   @DisplayName("Should construct complete order request with nested objects")
   void testFullOrderConstruction_BuildsCompleteObjectGraph() {
     // Act
-    request = new MercadoPagoOrderRequest("order_789", new BigDecimal("299.99"), "buyer@test.com");
+    request =
+        new MercadoPagoOrderRequest(
+            "order_789", new BigDecimal("299.99"), "buyer@test.com", "APRO");
 
     // Assert - verify entire object graph
     assertThat(request.getType()).isEqualTo("online");

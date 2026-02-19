@@ -39,12 +39,12 @@ public class PaymentQueueListener {
     try {
       // Parse the message
       PaymentRequestDto paymentRequest = objectMapper.readValue(message, PaymentRequestDto.class);
+      log.info("Parsed payment request: {}", paymentRequest);
 
       log.info(
-          "Processing payment request - workOrderId: {}, clientId: {}, budgetId: {}",
+          "Processing payment request - workOrderId: {}, clientId: {}",
           paymentRequest.getWorkOrderId(),
-          paymentRequest.getClientId(),
-          paymentRequest.getBudgetId());
+          paymentRequest.getCustomerId());
 
       // Process the payment (idempotency handled by ProcessPaymentService)
       processPaymentUseCase.processPayment(paymentRequest);

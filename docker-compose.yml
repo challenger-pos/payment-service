@@ -28,7 +28,7 @@ services:
       dynamodb-local:
         condition: service_healthy
     environment:
-      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_REGION: ${AWS_REGION:-us-east-2}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:-test-key}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:-test-secret}
       DYNAMODB_TABLE_NAME: ${DYNAMODB_TABLE_NAME:-payments-dev}
@@ -57,7 +57,7 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-development}
       
       # AWS Configuration for DynamoDB Local
-      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_REGION: ${AWS_REGION:-us-east-2}
       AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-test-key}
       AWS_SECRET_KEY: ${AWS_SECRET_KEY:-test-secret}
       AWS_DYNAMODB_ENDPOINT: ${AWS_DYNAMODB_ENDPOINT:-http://dynamodb-local:8000}

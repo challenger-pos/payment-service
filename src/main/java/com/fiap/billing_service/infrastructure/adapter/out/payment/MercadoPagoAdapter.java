@@ -40,7 +40,8 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
   }
 
   @Override
-  public PaymentResponse processPixPayment(BigDecimal amount, String email, String description) {
+  public PaymentResponse processPixPayment(
+      BigDecimal amount, String email, String description, String firstName) {
     log.info(
         "Processing PIX payment through Mercado Pago Orders API: amount={}, email={}",
         amount,
@@ -55,7 +56,8 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
       // Create order request
       MercadoPagoOrderRequest orderRequest =
-          new MercadoPagoOrderRequest(externalReference, amount, payerEmail);
+          new MercadoPagoOrderRequest(externalReference, amount, payerEmail, firstName);
+      log.info("Created Mercado Pago order request: {}", orderRequest);
 
       // Set up headers with Authorization and X-Idempotency-Key
       HttpHeaders headers = new HttpHeaders();
@@ -130,14 +132,14 @@ public class MercadoPagoAdapter implements PaymentGatewayPort {
 
   private PaymentStatus mapStatus(String mpStatus) {
     if (mpStatus == null) {
-      return PaymentStatus.PROCESSING;
+      return PaymentStatus.REJECTED;
     }
 
     return switch (mpStatus.toLowerCase()) {
-      case "approved", "processed" -> PaymentStatus.APPROVED;
-      case "rejected", "cancelled" -> PaymentStatus.REJECTED;
+      case "approved", "processed", "accredited" -> PaymentStatus.APPROVED;
+      case "waiting_transfer", "cancelled" -> PaymentStatus.REJECTED;
       case "pending", "processing" -> PaymentStatus.PROCESSING;
-      default -> PaymentStatus.PROCESSING;
+      default -> PaymentStatus.REJECTED;
     };
   }
 }

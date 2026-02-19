@@ -7,9 +7,8 @@ import java.util.UUID;
 
 public class Payment {
   private final UUID id;
-  private final UUID budgetId;
   private final UUID workOrderId;
-  private final UUID clientId;
+  private final UUID customerId;
   private final BigDecimal amount;
   private PaymentStatus status;
   private String externalPaymentId; // Mercado Pago payment ID
@@ -21,11 +20,10 @@ public class Payment {
   private LocalDateTime processedAt;
   private String errorMessage;
 
-  public Payment(UUID id, UUID budgetId, UUID workOrderId, UUID clientId, BigDecimal amount) {
+  public Payment(UUID id, UUID workOrderId, UUID customerId, BigDecimal amount) {
     this.id = id;
-    this.budgetId = budgetId;
     this.workOrderId = workOrderId;
-    this.clientId = clientId;
+    this.customerId = customerId;
     this.amount = amount;
     this.status = PaymentStatus.PENDING;
     this.createdAt = LocalDateTime.now();
@@ -35,16 +33,12 @@ public class Payment {
     return id;
   }
 
-  public UUID getBudgetId() {
-    return budgetId;
-  }
-
   public UUID getWorkOrderId() {
     return workOrderId;
   }
 
-  public UUID getClientId() {
-    return clientId;
+  public UUID getCustomerId() {
+    return customerId;
   }
 
   public BigDecimal getAmount() {
