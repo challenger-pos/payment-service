@@ -158,7 +158,6 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           mvn test \
-            -DargLine="-javaagent:${{ env.JAVA_HOME }}/lib/jvm.jar" \
             -Dspring.profiles.active=test
         env:
           MAVEN_OPTS: -Xmx2048m
