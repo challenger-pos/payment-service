@@ -49,9 +49,8 @@ public class PaymentQueueListener {
       log.info("Parsed payment request: {}", paymentRequest);
 
       if (span != null) {
-        span.setTag("payment.work_order_id", paymentRequest.getWorkOrderId());
-        span.setTag("payment.client_id", paymentRequest.getClientId());
-        span.setTag("payment.budget_id", paymentRequest.getBudgetId());
+        span.setTag("payment.work_order_id", paymentRequest.getWorkOrderId() != null ? paymentRequest.getWorkOrderId().toString() : "unknown");
+        span.setTag("payment.customer_id", paymentRequest.getCustomerId() != null ? paymentRequest.getCustomerId().toString() : "unknown");
       }
 
       log.info(

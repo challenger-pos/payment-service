@@ -31,7 +31,6 @@ variable "app_replicas" {
 variable "app_image" {
   description = "Docker image for billing service"
   type        = string
-  default     = "thiagotierre/billing-service:latest"
 }
 
 variable "app_port" {
@@ -96,6 +95,17 @@ variable "sqs_queue_url" {
   description = "SQS Queue URL for payment processing"
   type        = string
   default     = ""
+}
+
+# Remote States
+variable "eks_state_key" {
+  description = "EKS Terraform state key"
+  type        = string
+}
+
+variable "dynamodb_state_key" {
+  description = "DynamoDB Terraform state key"
+  type        = string
 }
 
 # HPA
