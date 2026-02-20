@@ -3,6 +3,7 @@ spring:
   config:
     activate:
       on-profile: development
+
   cloud:
     aws:
       region:
@@ -14,32 +15,54 @@ spring:
         auto: false
       sqs:
         listener:
-          # Use ON_SUCCESS acknowledgment mode for idempotency
           acknowledgement-mode: on-success
-          # 5 minutes visibility timeout (enough for Mercado Pago API calls + processing)
           visibility-timeout: 300
 
-# AWS Configuration (dummy values for local development)
+# AWS Configuration for Development
 aws:
   region: us-east-2
-  credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+  dynamodb:
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:http://localhost:8000}
+  access:
+    key: ${AWS_ACCESS_KEY:test-key}
+  secret:
+    key: ${AWS_SECRET_KEY:test-secret}
   sqs:
-    payment-request-queue: payment-request-queue
-    payment-request-dlq: payment-request-dlq # Dead Letter Queue for failed messages
-    payment-response-success-queue: payment-response-success-queue
-    payment-response-failure-queue: payment-response-failure-queue
-    auto-create-queue: true # Automatically create queue if it doesn't exist
-    max-receive-count: 3 # Move to DLQ after 3 failed attempts
+    payment-request-queue: ${PAYMENT_REQUEST_QUEUE:payment-request-queue}
+    payment-request-dlq: ${PAYMENT_REQUEST_DLQ:payment-request-dlq}
+    payment-response-success-queue: ${PAYMENT_RESPONSE_SUCCESS_QUEUE:payment-response-success-queue}
+    payment-response-failure-queue: ${PAYMENT_RESPONSE_FAILURE_QUEUE:payment-response-failure-queue}
+    auto-create-queue: false
+    max-receive-count: 3
+
+# DynamoDB Configuration for Development
+dynamodb:
+  table-name: ${DYNAMODB_TABLE_NAME:payments-dev}
 
 # Mercado Pago Configuration (dummy values for local development)
 mercadopago:
-  access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
-  public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+
+# Datadog (disabled in dev)
+dd:
+  trace:
+    enabled: false
+
+# Actuator Configuration for Development
+management:
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
     com.fiap.billing_service: DEBUG
     com.icegreen.greenmail: DEBUG
     org.springframework.mail: DEBUG
+    # Suppress verbose AWS logs
+    org.springframework.cloud.aws: WARN
+    software.amazon.awssdk: WARN
+    software.amazon.awssdk.request: ERROR
+    software.amazon.awssdk.http: ERROR
+    software.amazon.awssdk.auth: ERROR

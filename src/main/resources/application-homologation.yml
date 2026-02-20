@@ -4,20 +4,6 @@ spring:
     activate:
       on-profile: homologation
 
-mail:
-  host: smtp.office365.com
-  port: 587
-  username: ${HOTMAIL_USERNAME}
-  password: ${HOTMAIL_PASSWORD}
-  properties:
-    mail:
-      smtp:
-        auth: true
-        starttls:
-          enable: true
-          required: true
-
-spring:
   cloud:
     aws:
       region:
@@ -27,24 +13,67 @@ spring:
         secret-key: ${AWS_SECRET_KEY}
       stack:
         auto: false
+      sqs:
+        listener:
+          acknowledgement-mode: on-success
+          visibility-timeout: 300
 
-# AWS SES Configuration for Homologation
+# AWS Configuration for Homologation
 aws:
   region: us-east-2
-  credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+  dynamodb:
+    endpoint: "" # Uses AWS managed endpoint (no override)
+  access:
+    key: ${AWS_ACCESS_KEY}
+  secret:
+    key: ${AWS_SECRET_KEY}
   sqs:
-    payment-request-queue: payment-request-queue-homolog
-    payment-response-queue: payment-response-queue-homolog
+    payment-request-queue: payment-request-queue
+    payment-request-dlq: payment-request-dlq
+    payment-response-success-queue: payment-response-success-queue
+    payment-response-failure-queue: payment-response-failure-queue
     auto-create-queue: false
+    max-receive-count: 3
 
-# Mercado Pago Configuration (using sandbox environment)
+# DynamoDB Configuration for Homologation
+dynamodb:
+  table-name: ${DYNAMODB_TABLE_NAME:payments-homolog}
+
+# Mercado Pago Configuration
 mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
   public-key: ${MERCADOPAGO_PUBLIC_KEY}
 
+# Actuator Configuration for Homologation
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
 logging:
   level:
-    com.fiap.billing_service: DEBUG
-    software.amazon.awssdk.services.ses: DEBUG
+    com.fiap.billing_service: INFO
+    org.springframework.cloud.aws: INFO
+    software.amazon.awssdk: INFO
+
+  # Mercado Pago Configuration (dummy values for local development)
+  mercadopago:
+    access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
+    public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+
+# Actuator Configuration for Homologation
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  logging:
+    level:
+      com.fiap.billing_service: INFO
+      com.icegreen.greenmail: WARN
+      org.springframework.mail: WARN

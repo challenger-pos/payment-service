@@ -4,54 +4,58 @@ spring:
     activate:
       on-profile: production
 
-  jpa:
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: false
-
-mail:
-  host: smtp.office365.com
-  port: 587
-  username: ${HOTMAIL_USERNAME}
-  password: ${HOTMAIL_PASSWORD}
-  properties:
-    mail:
-      smtp:
-        auth: true
-        starttls:
-          enable: true
-          required: true
-
-spring:
   cloud:
     aws:
       region:
-        static: us-east-2
+        static: us-east-1
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
       stack:
         auto: false
+      sqs:
+        listener:
+          acknowledgement-mode: on-success
+          visibility-timeout: 300
 
-# AWS SES Configuration for Production
+# AWS Configuration for Production
 aws:
   region: us-east-2
-  credentials:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
+  dynamodb:
+    endpoint: "" # Uses AWS managed endpoint (no override)
+  access:
+    key: ${AWS_ACCESS_KEY}
+  secret:
+    key: ${AWS_SECRET_KEY}
   sqs:
-    payment-request-queue: payment-request-queue-prod
-    payment-response-queue: payment-response-queue-prod
+    payment-request-queue: payment-request-queue
+    payment-request-dlq: payment-request-dlq
+    payment-response-success-queue: payment-response-success-queue
+    payment-response-failure-queue: payment-response-failure-queue
     auto-create-queue: false
+    max-receive-count: 3
 
-# Mercado Pago Configuration (using production environment)
+# DynamoDB Configuration for Production
+dynamodb:
+  table-name: ${DYNAMODB_TABLE_NAME:payments}
+
+# Mercado Pago Configuration (dummy values for local development)
 mercadopago:
-  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
-  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+  access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
+  public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+
+# Actuator Configuration for Production (minimal exposure)
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
 
 logging:
   level:
     com.fiap.billing_service: INFO
-    org.springframework.web: WARN
-    software.amazon.awssdk: WARN
+    com.icegreen.greenmail: WARN
+    org.springframework.mail: WARN

@@ -1,29 +1,44 @@
 version: '3.8'
 
 services:
-  # PostgreSQL 17 Database
-  postgres:
-    image: postgres:17-alpine
-    container_name: billing-service-postgres
+  # Amazon DynamoDB Local for development and testing
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: billing-service-dynamodb
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: billing_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - "8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
     networks:
       - billing-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d billing_db"]
+      test: ["CMD", "curl", "-X", "GET", "http://localhost:8000/"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+
+  # DynamoDB Local initialization service
+  dynamodb-init:
+    image: amazon/aws-cli:latest
+    container_name: billing-service-dynamodb-init
+    depends_on:
+      dynamodb-local:
+        condition: service_healthy
+    environment:
+      AWS_REGION: ${AWS_REGION:-us-east-2}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:-test-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:-test-secret}
+      DYNAMODB_TABLE_NAME: ${DYNAMODB_TABLE_NAME:-payments-dev}
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+    networks:
+      - billing-network
+    volumes:
+      - ./init-scripts/02-dynamodb-init.sh:/init/02-dynamodb-init.sh:ro
+    entrypoint: /bin/bash
+    command: /init/02-dynamodb-init.sh
 
   # Billing Service Application
   billing-service:
@@ -33,25 +48,36 @@ services:
     container_name: billing-service-app
     restart: unless-stopped
     depends_on:
-      postgres:
+      dynamodb-local:
         condition: service_healthy
+      dynamodb-init:
+        condition: service_completed_successfully
     environment:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-development}
       
-      # Database Configuration
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/billing_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres123
-      
-      # AWS Configuration
+      # AWS Configuration for DynamoDB Local
       AWS_REGION: ${AWS_REGION:-us-east-2}
-      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
-      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-test-key}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY:-test-secret}
+      AWS_DYNAMODB_ENDPOINT: ${AWS_DYNAMODB_ENDPOINT:-http://dynamodb-local:8000}
+      
+      # DynamoDB Configuration
+      DYNAMODB_TABLE_NAME: ${DYNAMODB_TABLE_NAME:-payments-dev}
+      
+      # AWS Configuration (SQS)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY:-test-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_KEY:-test-secret}
       
       # Mercado Pago Configuration
       MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN}
       MERCADOPAGO_PUBLIC_KEY: ${MERCADOPAGO_PUBLIC_KEY:-test-public-key}
+      
+      # SQS Configuration
+      PAYMENT_REQUEST_QUEUE: ${PAYMENT_REQUEST_QUEUE:-payments-dev}
+      PAYMENT_REQUEST_DLQ: ${PAYMENT_REQUEST_DLQ:-payments-dev-dlq}
+      PAYMENT_RESPONSE_SUCCESS_QUEUE: ${PAYMENT_RESPONSE_SUCCESS_QUEUE:-payments-success-dev}
+      PAYMENT_RESPONSE_FAILURE_QUEUE: ${PAYMENT_RESPONSE_FAILURE_QUEUE:-payments-failure-dev}
       
       # Optional: Email Configuration
       GMAIL_USERNAME: ${GMAIL_USERNAME:-}
@@ -72,31 +98,12 @@ services:
       retries: 3
       start_period: 60s
 
-  # Optional: PgAdmin for database management
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: billing-service-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@billing-service.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-    ports:
-      - "5050:80"
-    networks:
-      - billing-network
-    depends_on:
-      - postgres
-    profiles:
-      - dev # Only runs when using: docker-compose --profile dev up
-
 networks:
   billing-network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  dynamodb_data:
     driver: local
   app_logs:
     driver: local

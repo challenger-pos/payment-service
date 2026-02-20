@@ -9,16 +9,13 @@ import com.fiap.billing_service.domain.entity.Payment;
 import com.fiap.billing_service.domain.exception.PaymentProcessingException;
 import com.fiap.billing_service.domain.valueobject.PaymentStatus;
 import com.fiap.billing_service.infrastructure.adapter.in.messaging.dto.PaymentRequestDto;
-import java.math.BigDecimal;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 @Service
-@Transactional
 public class ProcessPaymentService implements ProcessPaymentUseCase {
 
   private static final Logger log = LoggerFactory.getLogger(ProcessPaymentService.class);
@@ -66,27 +63,29 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
     var payment =
         new Payment(
             UUID.randomUUID(),
-            paymentRequest.getBudgetId(),
             workOrderId,
-            paymentRequest.getClientId(),
-            new BigDecimal(paymentRequest.getOrderRequest().getTotalAmount()));
+            paymentRequest.getCustomerId(),
+            paymentRequest.getAmount());
+    log.info("Created payment entity: {}", payment);
 
-    // Save initial payment (constraint violation check - second line of defense)
+    // Save initial payment (DynamoDB constraint validation - first persistence check)
     try {
       payment = paymentRepository.save(payment);
       log.info(
-          "Payment created successfully: paymentId={}, workOrderId={}", payment.getId(), workOrderId);
-    } catch (DataIntegrityViolationException e) {
-      // Race condition: another instance created payment between our check and save
+          "Payment created successfully: paymentId={}, workOrderId={}",
+          payment.getId(),
+          workOrderId);
+    } catch (DynamoDbException e) {
+      // Race condition or constraint violation
       log.info(
-          "Concurrent duplicate detected by database constraint for workOrderId: {}. Fetching existing payment.",
+          "Concurrent duplicate or constraint violation detected for workOrderId: {}. Fetching existing payment.",
           workOrderId);
       return paymentRepository
           .findByWorkOrderId(workOrderId)
           .orElseThrow(
               () ->
                   new PaymentProcessingException(
-                      "Payment constraint violation but payment not found for workOrderId: "
+                      "Payment saving failed but payment not found for workOrderId: "
                           + workOrderId));
     }
 
@@ -94,11 +93,12 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
       // Process payment through Mercado Pago (PIX)
       var processedPayment =
           paymentGateway.processPixPayment(
-              new BigDecimal(paymentRequest.getOrderRequest().getTotalAmount()),
+              paymentRequest.getAmount(),
               null,
               paymentRequest.getDescription() != null
                   ? paymentRequest.getDescription()
-                  : "Payment for order " + paymentRequest.getWorkOrderId());
+                  : "Payment for order " + paymentRequest.getWorkOrderId(),
+              paymentRequest.getFirstName());
 
       // Update payment with gateway response
       payment.markAsProcessing(
@@ -113,6 +113,9 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
         log.info("Querying order status from Mercado Pago for payment: {}", payment.getId());
         Payment queryResult =
             paymentOrderQuery.getOrderStatus(processedPayment.getOrderPaymentId());
+
+        log.info(
+            "status query result for payment {}: {}", payment.getId(), queryResult.getStatus());
 
         // Update payment with queried status
         if (queryResult.getStatus() == PaymentStatus.APPROVED) {

@@ -89,3 +89,163 @@ junit.xml
 venv/
 env/
 ENV/
+
+# ============================================
+# SECURITY SENSITIVE FILES - CRITICAL
+# ============================================
+
+# Terraform State Files (CRITICAL - contains secrets in plaintext)
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+secret.tfvars
+terraform.tfvars
+
+# SSH Keys and Certificates (CRITICAL)
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*.jks
+id_rsa
+id_ed25519
+*.pub
+~/.ssh/
+
+# Kubernetes Secrets and Config
+kubeconfig
+kubeconfig.*
+*-secret.yml
+*-secret.yaml
+secrets/
+**/kube/secrets/*
+
+# Docker Config and Credentials
+.dockercfg
+.docker/
+.dockerignore.local
+docker-compose.override.yml
+
+# Application Secrets
+application-secret.yml
+application-secret.yaml
+*.secret.*
+**/secrets/*
+**/credentials/*
+
+# Spring Boot Configuration with Secrets
+application.properties
+application-local.properties
+application-*.local.yml
+application-*.local.yaml
+
+# API Keys and Tokens (in various formats)
+*.token
+*.tokens
+.auth-token
+auth-tokens
+*-api-key
+*-access-token
+*-refresh-token
+
+# IDE Local Configuration (contains credentials)
+.idea/*.xml
+.idea/shelf
+.idea/runConfigurations
+.idea/dictionaries
+.idea/*User.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+*.jks
+
+# VS Code User Settings (can contain credentials)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.keybindings.json
+
+# JetBrains IDE - sensitive local files
+.idea/shelf
+.idea/dataSources.local.xml
+.idea/libraries/
+*.iml
+
+# Shell scripts with hardcoded secrets
+*.sh.local
+*-local.sh
+script-vars
+
+# Environment-specific files that might have sensitive data
+local.env
+*.local.env
+dev.env
+*.dev.env
+test.env
+*.test.env
+
+# Gradle (if used)
+.gradle/
+gradle/wrapper/gradle-wrapper.properties.local
+
+# SSL/TLS Certificates and CA Bundles
+*.csr
+*.cer
+ca-bundle.crt
+*.der
+
+# Sensitive Logs and Reports
+debug.log
+error.log
+**/sensitive-logs/
+**/audit-logs/
+reports/sensitive/
+
+# Backup and Temporary Sensitive Files
+*.bak.env
+*.backup.properties
+*~
+*.tmp.yml
+*.swp
+*.swo
+
+# Cloud Provider Credentials
+gcloud-credentials.json
+aws-credentials
+azure-credentials
+.gcp/
+.azure/
+
+# Private Keys for Deployment
+deploy-key
+deploy-key.pub
+*.deploy.key
+**/keys/private/*
+
+# Database Dumps with Sensitive Data
+*.sql.bak
+database-backup-*.sql
+db-dump-*.sql
+
+# Third-party tools sensitive config
+.terraform.tfvars
+.env.terraform
+ansible/inventory.local
+ansible/vault-password
+# Local Development Compose Files (use main docker-compose.yml instead)
+docker-compose.dev.yml
+docker-compose.local.yml
+docker-compose.override.yml
+
+# Documentation PDFs (Generated from Markdown, no need to version)
+*.pdf

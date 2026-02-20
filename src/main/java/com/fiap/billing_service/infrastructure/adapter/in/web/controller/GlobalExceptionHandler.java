@@ -1,6 +1,8 @@
 package com.fiap.billing_service.infrastructure.adapter.in.web.controller;
 
 import com.fiap.billing_service.domain.exception.PaymentProcessingException;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -18,8 +20,18 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    private void addErrorToSpan(Exception ex) {
+        Span span = GlobalTracer.get().activeSpan();
+        if (span != null) {
+            span.setTag("error", true);
+            span.setTag("error.type", ex.getClass().getName());
+            span.setTag("error.message", ex.getMessage() != null ? ex.getMessage() : "Unknown error");
+        }
+    }
+
     @ExceptionHandler(PaymentProcessingException.class)
     public ResponseEntity<Map<String, Object>> handlePaymentProcessingException(PaymentProcessingException ex) {
+        addErrorToSpan(ex);
         String correlationId = MDC.get("correlationId");
         log.error("[CorrelationId: {}] Payment processing error: {}", correlationId, ex.getMessage(), ex);
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, correlationId);
@@ -27,9 +39,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        addErrorToSpan(ex);
         String correlationId = MDC.get("correlationId");
         log.error("[CorrelationId: {}] Unexpected error occurred: {}", correlationId, ex.getMessage(), ex);
-        return buildErrorResponse("An unexpected error occurred: " + ex.getMessage(), 
+        return buildErrorResponse("An unexpected error occurred: " + ex.getMessage(),
             HttpStatus.INTERNAL_SERVER_ERROR, correlationId);
     }
 

@@ -11,9 +11,8 @@ public class PaymentMapper {
   public PaymentEntity toEntity(Payment payment) {
     PaymentEntity entity = new PaymentEntity();
     entity.setId(payment.getId());
-    entity.setBudgetId(payment.getBudgetId());
     entity.setWorkOrderId(payment.getWorkOrderId());
-    entity.setClientId(payment.getClientId());
+    entity.setCustomerId(payment.getCustomerId());
     entity.setAmount(payment.getAmount());
     entity.setStatus(payment.getStatus().name());
     entity.setExternalPaymentId(payment.getExternalPaymentId());
@@ -21,7 +20,15 @@ public class PaymentMapper {
     entity.setPaymentMethod(payment.getPaymentMethod());
     entity.setQrCode(payment.getQrCode());
     entity.setQrCodeBase64(payment.getQrCodeBase64());
-    entity.setCreatedAt(payment.getCreatedAt());
+
+    // Ensure createdAt is set (required for DynamoDB sort key)
+    if (payment.getCreatedAt() != null) {
+      entity.setCreatedAt(payment.getCreatedAt());
+    } else {
+      // Default to now if not set
+      entity.setCreatedAt(java.time.LocalDateTime.now());
+    }
+
     entity.setProcessedAt(payment.getProcessedAt());
     entity.setErrorMessage(payment.getErrorMessage());
     return entity;
@@ -30,11 +37,7 @@ public class PaymentMapper {
   public Payment toDomain(PaymentEntity entity) {
     Payment payment =
         new Payment(
-            entity.getId(),
-            entity.getBudgetId(),
-            entity.getWorkOrderId(),
-            entity.getClientId(),
-            entity.getAmount());
+            entity.getId(), entity.getWorkOrderId(), entity.getCustomerId(), entity.getAmount());
 
     // Restore payment status and other fields
     if (entity.getStatus() != null) {

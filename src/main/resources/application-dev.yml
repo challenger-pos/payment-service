@@ -1,0 +1,55 @@
+# Dev Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    aws:
+      region:
+        static: us-east-2
+      credentials:
+        access-key: ${AWS_ACCESS_KEY:test-key}
+        secret-key: ${AWS_SECRET_KEY:test-secret}
+      stack:
+        auto: false
+      sqs:
+        listener:
+          acknowledgement-mode: on-success
+          visibility-timeout: 300
+
+# AWS Configuration
+aws:
+  region: us-east-2
+  dynamodb:
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:http://localhost:8000}
+  access:
+    key: ${AWS_ACCESS_KEY:test-key}
+  secret:
+    key: ${AWS_SECRET_KEY:test-secret}
+  sqs:
+    payment-request-queue: ${PAYMENT_REQUEST_QUEUE:payment-request-queue}
+    payment-request-dlq: ${PAYMENT_REQUEST_DLQ:payment-request-dlq}
+    payment-response-success-queue: ${PAYMENT_RESPONSE_SUCCESS_QUEUE:payment-response-success-queue}
+    payment-response-failure-queue: ${PAYMENT_RESPONSE_FAILURE_QUEUE:payment-response-failure-queue}
+    auto-create-queue: false
+    max-receive-count: 3
+
+# Datadog (disabled in dev)
+dd:
+  trace:
+    enabled: false
+
+# Mercado Pago Configuration
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+
+logging:
+  level:
+    com.fiap.billing_service: DEBUG
+    # Suppress verbose AWS logs (use WARN instead of DEBUG)
+    org.springframework.cloud.aws: WARN
+    software.amazon.awssdk: WARN
+    software.amazon.awssdk.request: ERROR
+    software.amazon.awssdk.http: ERROR
+    software.amazon.awssdk.auth: ERROR

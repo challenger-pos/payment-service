@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 
 /** Output port for payment gateway (Mercado Pago with PIX) */
 public interface PaymentGatewayPort {
-  PaymentResponse processPixPayment(BigDecimal amount, String email, String description);
+  PaymentResponse processPixPayment(
+      BigDecimal amount, String email, String description, String firstName);
 }

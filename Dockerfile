@@ -10,7 +10,9 @@ COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
 RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline -B
+# RUN ./mvnw dependency:go-offline -B
+# Note: Skipping dependency:go-offline due to sonar-maven-plugin version unavailability
+# Dependencies will be downloaded during the clean package phase
 
 # Copy source code and build the application
 COPY src ./src
