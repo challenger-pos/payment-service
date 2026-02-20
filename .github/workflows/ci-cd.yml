@@ -1,75 +1,36 @@
-name: CI/CD Pipeline - Billing Service
+name: CI/CD - Spring Boot Build & Docker Hub Deploy
 
 on:
   push:
     branches:
       - ci-dc
-      - master
-      - develop
-  pull_request:
-    branches:
-      - ci-dc
-      - master
-      - develop
+      - main
+      - homologation
   workflow_dispatch:
-    inputs:
-      environment:
-        description: "Deploy to environment"
-        required: false
-        default: ""
-        type: choice
-        options:
-          - ""
-          - dev
-          - homologation
-          - production
 
 env:
-  REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKER_HUB_USERNAME }}/billing-service
-  JAVA_VERSION: "21"
-  MAVEN_VERSION: "3.9.9"
-  KUBERNETES_NAMESPACE: challengeone-billing
   AWS_REGION: us-east-2
+  ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || (github.ref_name == 'homologation' && 'homologation' || 'develop') }}
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/billing-service
 
 jobs:
-  # ============================================================================
-  # STAGE 1: BUILD APPLICATION
-  # ============================================================================
-  build:
-    name: Build Application
+  build-and-test:
+    name: Build and Test Project
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    environment: ${{ github.ref_name == 'main' && 'production' || (github.ref_name == 'homologation' && 'homologation' || 'develop') }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Full history for SonarQube
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-          cache: maven
+          distribution: temurin
+          java-version: 21
 
-      - name: Display Maven version
-        run: mvn -v
-
-      - name: Build application
-        run: mvn clean package -DskipTests
-        env:
-          MAVEN_OPTS: -Xmx2048m
-
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: application-jar
-          path: target/billing-service.jar
-          retention-days: 1
+      - name: Build with Maven
+        run: mvn -B clean package -DskipTests
 
   # ============================================================================
   # STAGE 2: RUN AUTOMATED TESTS
@@ -77,130 +38,30 @@ jobs:
   test:
     name: Automated Tests
     runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-
-    services:
-      dynamodb-local:
-        image: amazon/dynamodb-local:latest
-        ports:
-          - 8000:8000
+    needs: build-and-test
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-          cache: maven
+          distribution: temurin
+          java-version: 21
 
-      - name: Install AWS CLI v2 (if needed)
-        run: |
-          if ! command -v aws &> /dev/null; then
-            echo "AWS CLI not found, installing..."
-            sudo apt-get update -qq
-            sudo apt-get install -qq -y awscli
-          else
-            echo "✅ AWS CLI already installed: $(aws --version)"
-          fi
-
-      - name: Wait for DynamoDB Local to be ready
-        run: |
-          COUNTER=0
-          MAX_ATTEMPTS=30
-          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            if nc -zv localhost 8000 > /dev/null 2>&1; then
-              echo "✅ DynamoDB Local is ready"
-              sleep 2
-              break
-            fi
-            COUNTER=$((COUNTER + 1))
-            echo "Waiting for DynamoDB Local... ($COUNTER/$MAX_ATTEMPTS)"
-            sleep 2
-          done
-          if [ $COUNTER -eq $MAX_ATTEMPTS ]; then
-            echo "❌ DynamoDB Local failed to start"
-            exit 1
-          fi
-
-      - name: Initialize DynamoDB Test Table
-        run: |
-          aws dynamodb create-table \
-            --table-name payments-test \
-            --attribute-definitions \
-              AttributeName=id,AttributeType=S \
-              AttributeName=order_id,AttributeType=S \
-              AttributeName=client_id,AttributeType=S \
-            --key-schema \
-              AttributeName=id,KeyType=HASH \
-              AttributeName=order_id,KeyType=RANGE \
-            --global-secondary-indexes "[
-              {
-                \"IndexName\": \"client_id-index\",
-                \"KeySchema\": [{\"AttributeName\": \"client_id\", \"KeyType\": \"HASH\"}],
-                \"Projection\": {\"ProjectionType\": \"ALL\"},
-                \"ProvisionedThroughput\": {\"ReadCapacityUnits\": 5, \"WriteCapacityUnits\": 5}
-              }
-            ]" \
-            --billing-mode PROVISIONED \
-            --provisioned-throughput "ReadCapacityUnits=10,WriteCapacityUnits=10" \
-            --region us-east-2 \
-            --endpoint-url http://localhost:8000 || echo "Table may already exist"
-        env:
-          AWS_ACCESS_KEY_ID: test-key
-          AWS_SECRET_ACCESS_KEY: test-secret
-          AWS_DEFAULT_REGION: us-east-2
-
-      - name: Run unit tests with coverage
-        run: |
-          mvn test \
-            -Dspring.profiles.active=test
+      - name: Run tests
+        run: mvn test -Dspring.profiles.active=test
         env:
           MAVEN_OPTS: -Xmx2048m
-          AWS_REGION: us-east-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DYNAMODB_ENDPOINT: http://localhost:8000
-
-      - name: Run integration tests
-        run: |
-          mvn failsafe:integration-test \
-            -Dspring.profiles.active=test
-        env:
-          MAVEN_OPTS: -Xmx2048m
-          AWS_REGION: us-east-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DYNAMODB_ENDPOINT: http://localhost:8000
-        continue-on-error: true
-
-      - name: Generate test report
-        if: always()
-        run: mvn surefire-report:report failsafe-report:failsafe-report-only
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: |
-            target/surefire-reports/
-            target/failsafe-reports/
-            target/site/
-          retention-days: 30
-
-      - name: Publish test results
-        if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: |
-            target/surefire-reports/TEST-*.xml
-            target/failsafe-reports/TEST-*.xml
-          check_name: Test Results
+          path: target/surefire-reports/
+          retention-days: 7
 
   # ============================================================================
   # STAGE 3: QUALITY VERIFICATION (SonarQube)
@@ -209,10 +70,6 @@ jobs:
     name: SonarQube Quality Gate
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name != 'pull_request' || github.event.action != 'synchronize'
-    permissions:
-      contents: read
-      pull-requests: read
 
     steps:
       - name: Checkout code
@@ -220,30 +77,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-          cache: maven
+          distribution: temurin
+          java-version: 21
 
-      - name: Run SonarQube analysis
+      - name: Run tests and SonarQube analysis
         run: |
-          mvn clean verify \
-            -Pcoverage \
+          mvn -B verify -Pcoverage \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=fiap_billing-service \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+            -Dspring.profiles.active=test
         env:
           MAVEN_OPTS: -Xmx2048m
-        continue-on-error: true
-
-      - name: Check Quality Gate
-        run: |
-          echo "Quality Gate check completed"
-          echo "Verify results in SonarQube dashboard"
         continue-on-error: true
 
       - name: Comment PR with SonarQube results
@@ -252,30 +102,45 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const message = `## 📊 Code Quality Report\n\n✅ SonarQube analysis completed!\n\n[View detailed report in SonarQube](https://${{ secrets.SONAR_HOST_URL }}/dashboard?id=fiap_billing-service)`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: message
+              body: `## 📊 Code Quality Report\n\n✅ SonarQube analysis completed!\n\n[View detailed report](https://sonarcloud.io/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }})`
             });
         continue-on-error: true
 
-  # ============================================================================
-  # STAGE 4: BUILD AND PUSH DOCKER IMAGE
-  # ============================================================================
-  docker-build:
-    name: Build and Push Docker Image
+  push-and-deploy:
+    name: Push Image & Deploy Infra
     runs-on: ubuntu-latest
-    needs: [build, test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
+    environment: ${{ github.ref_name == 'main' && 'production' || (github.ref_name == 'homologation' && 'homologation' || 'develop') }}
+    needs: quality-check
+
+    env:
+      TERRAFORM_DIR: infra/
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set environment tag
+        id: envtag
+        run: |
+          BRANCH_NAME=${GITHUB_REF##*/}
+          echo "TAG=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+          terraform_wrapper: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -283,524 +148,24 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        id: docker_build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Image digest
+      - name: Build and Push Docker Image
         run: |
-          echo "Image pushed with digest: ${{ steps.docker_build.outputs.digest }}"
-
-  # ============================================================================
-  # STAGE 5: SECURITY SCAN (Trivy)
-  # ============================================================================
-  security-scan:
-    name: Security Vulnerability Scan
-    runs-on: ubuntu-latest
-    needs: docker-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          format: "sarif"
-          output: "trivy-results.sarif"
-        continue-on-error: true
-
-      - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: "trivy-results.sarif"
-        continue-on-error: true
-
-  # ============================================================================
-  # STAGE 6: DEPLOY TO DEVELOPMENT
-  # ============================================================================
-  deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [quality-check, docker-build, security-scan]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: dev
-      url: https://billing-dev.challengeone.com
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: github-actions-billing-dev
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.0
-          terraform_wrapper: false
-
-      - name: Update backend configuration for dev
-        run: |
-          cd terraform
-          cat > backend.tf <<EOF
-          terraform {
-            backend "s3" {
-              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
-              key    = "v4/service-billing/dev/terraform.tfstate"
-              region = "${{ env.AWS_REGION }}"
-            }
-          }
-          EOF
+          docker build -t $IMAGE_NAME:${{ env.TAG }} .
+          docker push $IMAGE_NAME:${{ env.TAG }}
+          docker tag $IMAGE_NAME:${{ env.TAG }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest
 
       - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init -reconfigure
-
-      - name: Terraform Plan
-        run: |
-          cd terraform
-          terraform plan \
-            -var-file=terraform.tfvars.dev \
-            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
-            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
-            -out=tfplan
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform init -backend-config="key=app/${{ env.ENVIRONMENT }}/terraform.tfstate"
 
       - name: Terraform Apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve tfplan
-
-      - name: Get EKS cluster name from remote state
-        id: eks-cluster
-        run: |
-          cd terraform
-          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-dev")
-          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
-            --region ${{ env.AWS_REGION }}
-
-      - name: Wait for deployment rollout
-        run: |
-          kubectl rollout status deployment/billing-service \
-            -n ${{ env.KUBERNETES_NAMESPACE }} \
-            --timeout=5m
-        continue-on-error: true
-
-      - name: Health check - Development
-        run: |
-          COUNTER=0
-          MAX_ATTEMPTS=30
-          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
-              -l app=billing \
-              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-            
-            if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
-                wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
-              if [ ! -z "$HEALTH" ]; then
-                echo "✅ Development deployment is healthy"
-                exit 0
-              fi
-            fi
-            
-            COUNTER=$((COUNTER + 1))
-            echo "Health check attempt $COUNTER/$MAX_ATTEMPTS..."
-            sleep 10
-          done
-
-          echo "⚠️ Health check timed out. Manual verification required."
-          exit 1
-        continue-on-error: true
-
-      - name: Display deployment info
-        if: always()
-        run: |
-          echo "======================================"
-          echo "📦 Deployment Information - DEV"
-          echo "======================================"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
-          echo "Region: ${{ env.AWS_REGION }}"
-          echo "======================================"
-          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
-          echo "======================================"
-
-  # ============================================================================
-  # STAGE 7: DEPLOY TO HOMOLOGATION (After Dev)
-  # ============================================================================
-  deploy-homolog:
-    name: Deploy to Homologation
-    runs-on: ubuntu-latest
-    needs: deploy-dev
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: homologation
-      url: https://billing-homolog.challengeone.com
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Wait before deploying to Homolog
-        run: sleep 300 # Wait 5 minutes after Dev deployment
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: github-actions-billing-homolog
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.0
-          terraform_wrapper: false
-
-      - name: Update backend configuration for homologation
-        run: |
-          cd terraform
-          cat > backend.tf <<EOF
-          terraform {
-            backend "s3" {
-              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
-              key    = "v4/service-billing/homologation/terraform.tfstate"
-              region = "${{ env.AWS_REGION }}"
-            }
-          }
-          EOF
-
-      - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init -reconfigure
-
-      - name: Terraform Plan
-        run: |
-          cd terraform
-          terraform plan \
-            -var-file=terraform.tfvars.homologation \
-            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
-            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
-            -out=tfplan
-
-      - name: Terraform Apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve tfplan
-
-      - name: Get EKS cluster name from remote state
-        id: eks-cluster
-        run: |
-          cd terraform
-          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-homologation")
-          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
-            --region ${{ env.AWS_REGION }}
-
-      - name: Wait for deployment rollout
-        run: |
-          kubectl rollout status deployment/billing-service \
-            -n ${{ env.KUBERNETES_NAMESPACE }} \
-            --timeout=5m
-        continue-on-error: true
-
-      - name: Health check - Homologation
-        run: |
-          COUNTER=0
-          MAX_ATTEMPTS=60
-          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
-              -l app=billing \
-              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-            
-            if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
-                wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
-              if [ ! -z "$HEALTH" ]; then
-                echo "✅ Homologation deployment is healthy"
-                exit 0
-              fi
-            fi
-            
-            COUNTER=$((COUNTER + 1))
-            echo "Health check attempt $COUNTER/$MAX_ATTEMPTS..."
-            sleep 10
-          done
-
-          echo "⚠️ Health check timed out. Manual verification required."
-          exit 1
-        continue-on-error: true
-
-      - name: Display deployment info
-        if: always()
-        run: |
-          echo "============================================"
-          echo "📦 Deployment Information - HOMOLOGATION"
-          echo "============================================"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
-          echo "Region: ${{ env.AWS_REGION }}"
-          echo "============================================"
-          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
-          echo "============================================"
-          MAX_ATTEMPTS=60
-          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n billing-homologation \
-              -l app=billing-service \
-              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-            
-            if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n billing-homologation $POD -- \
-                wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
-              if [ ! -z "$HEALTH" ]; then
-                echo "✅ Homologation deployment is healthy"
-                exit 0
-              fi
-            fi
-            
-            COUNTER=$((COUNTER + 1))
-            echo "Health check attempt $COUNTER/$MAX_ATTEMPTS..."
-            sleep 10
-          done
-
-          echo "⚠️ Health check timed out. Manual verification required."
-          exit 1
-        continue-on-error: true
-
-  # ============================================================================
-  # STAGE 8: DEPLOY TO PRODUCTION (Manual Approval)
-  # ============================================================================
-  deploy-prod:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [deploy-homolog]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://billing.challengeone.com
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: github-actions-billing-prod
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.0
-          terraform_wrapper: false
-
-      - name: Update backend configuration for production
-        run: |
-          cd terraform
-          cat > backend.tf <<EOF
-          terraform {
-            backend "s3" {
-              bucket = "${{ secrets.TF_BACKEND_BUCKET }}"
-              key    = "v4/service-billing/production/terraform.tfstate"
-              region = "${{ env.AWS_REGION }}"
-            }
-          }
-          EOF
-
-      - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init -reconfigure
-
-      - name: Terraform Plan
-        run: |
-          cd terraform
-          terraform plan \
-            -var-file=terraform.tfvars.production \
-            -var="app_image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" \
-            -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            -var="mercadopago_access_token=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
-            -out=tfplan
-
-      - name: Terraform Apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve tfplan
-
-      - name: Get EKS cluster name from remote state
-        id: eks-cluster
-        run: |
-          cd terraform
-          CLUSTER_NAME=$(terraform output -raw eks_cluster_name 2>/dev/null || echo "challengeone-production")
-          echo "cluster_name=$CLUSTER_NAME" >> $GITHUB_OUTPUT
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --name ${{ steps.eks-cluster.outputs.cluster_name }} \
-            --region ${{ env.AWS_REGION }}
-
-      - name: Wait for deployment rollout
-        run: |
-          kubectl rollout status deployment/billing-service \
-            -n ${{ env.KUBERNETES_NAMESPACE }} \
-            --timeout=10m
-        continue-on-error: true
-
-      - name: Health check - Production (Extended)
-        run: |
-          COUNTER=0
-          MAX_ATTEMPTS=90
-          while [ $COUNTER -lt $MAX_ATTEMPTS ]; do
-            POD=$(kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} \
-              -l app=billing \
-              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-            
-            if [ ! -z "$POD" ]; then
-              HEALTH=$(kubectl exec -n ${{ env.KUBERNETES_NAMESPACE }} $POD -- \
-                wget -q -O- http://localhost:8080/actuator/health 2>/dev/null | grep -o '"status":"UP"' || true)
-              if [ ! -z "$HEALTH" ]; then
-                echo "✅ Production deployment is healthy"
-                exit 0
-              fi
-            fi
-            
-            COUNTER=$((COUNTER + 1))
-            echo "Health check attempt $COUNTER/$MAX_ATTEMPTS..."
-            sleep 10
-          done
-
-          echo "❌ Health check failed in Production"
-          exit 1
-
-      - name: Automatic Rollback on Health Check Failure
-        if: failure()
-        run: |
-          echo "🔄 Initiating automatic rollback..."
-          kubectl rollout undo deployment/billing-service \
-            -n ${{ env.KUBERNETES_NAMESPACE }}
-
-          kubectl rollout status deployment/billing-service \
-            -n ${{ env.KUBERNETES_NAMESPACE }} \
-            --timeout=5m
-
-          echo "✅ Rollback completed"
-
-      - name: Display deployment info
-        if: always()
-        run: |
-          echo "============================================"
-          echo "🚀 Deployment Information - PRODUCTION"
-          echo "============================================"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "Namespace: ${{ env.KUBERNETES_NAMESPACE }}"
-          echo "Region: ${{ env.AWS_REGION }}"
-          echo "============================================"
-          kubectl get pods -n ${{ env.KUBERNETES_NAMESPACE }} -l app=billing
-          echo "============================================"
-
-      - name: Notify deployment status
-        if: always()
-        uses: slackapi/slack-github-action@v1
-        with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "${{ job.status == 'success' && '✅' || '❌' }} Production Deployment - ${{ job.status }}",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Production Deployment*\n*Status:* ${{ job.status }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
-                  }
-                }
-              ]
-            }
-        continue-on-error: true
-
-  # ============================================================================
-  # FINAL: Notification Step
-  # ============================================================================
-  notify:
-    name: Pipeline Notification
-    runs-on: ubuntu-latest
-    needs: [build, test, quality-check, docker-build]
-    if: always()
-    permissions:
-      contents: read
-
-    steps:
-      - name: Determine pipeline status
-        run: |
-          if [ "${{ needs.build.result }}" == "failure" ] || \
-             [ "${{ needs.test.result }}" == "failure" ] || \
-             [ "${{ needs.quality-check.result }}" == "failure" ] || \
-             [ "${{ needs.docker-build.result }}" == "failure" ]; then
-            echo "PIPELINE_STATUS=❌ FAILED" >> $GITHUB_ENV
-            exit 1
-          else
-            echo "PIPELINE_STATUS=✅ SUCCESS" >> $GITHUB_ENV
-          fi
-
-      - name: Print summary
-        run: |
-          echo "=========================================="
-          echo "${{ env.PIPELINE_STATUS }}"
-          echo "=========================================="
-          echo "Build: ${{ needs.build.result }}"
-          echo "Tests: ${{ needs.test.result }}"
-          echo "Quality: ${{ needs.quality-check.result }}"
-          echo "Docker: ${{ needs.docker-build.result }}"
-          echo "=========================================="
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_environment: ${{ env.ENVIRONMENT }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+          TF_VAR_image_tag: ${{ env.TAG }}
