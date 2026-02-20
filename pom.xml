@@ -44,6 +44,7 @@
         <spring-cloud-aws.version>4.0.0</spring-cloud-aws.version>
         <aws-java-sdk.version>2.24.9</aws-java-sdk.version>
         <!-- SonarQube Properties -->
+        <sonar.organization>challenger-pos</sonar.organization>
         <sonar.projectKey>challenger-pos_payment-service</sonar.projectKey>
         <sonar.projectName>Billing Service</sonar.projectName>
         <sonar.sources>src/main</sonar.sources>
