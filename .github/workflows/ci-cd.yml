@@ -111,7 +111,7 @@ jobs:
     needs: quality-check
 
     env:
-      TERRAFORM_DIR: infra/
+      TERRAFORM_DIR: terraform/
 
     steps:
       - name: Checkout code
