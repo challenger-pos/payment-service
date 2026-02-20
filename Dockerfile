@@ -7,7 +7,6 @@ WORKDIR /app
 
 # Copy pom.xml and download dependencies (for better caching)
 COPY pom.xml .
-COPY .mvn .mvn
 COPY mvnw .
 RUN chmod +x mvnw
 # RUN ./mvnw dependency:go-offline -B
