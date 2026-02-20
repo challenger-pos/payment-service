@@ -7,15 +7,13 @@ WORKDIR /app
 
 # Copy pom.xml and download dependencies (for better caching)
 COPY pom.xml .
-COPY mvnw .
-RUN chmod +x mvnw
 # RUN ./mvnw dependency:go-offline -B
 # Note: Skipping dependency:go-offline due to sonar-maven-plugin version unavailability
 # Dependencies will be downloaded during the clean package phase
 
 # Copy source code and build the application
 COPY src ./src
-RUN ./mvnw clean package -DskipTests -B
+RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
@@ -39,8 +37,8 @@ USER appuser
 EXPOSE 8080
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+#   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
