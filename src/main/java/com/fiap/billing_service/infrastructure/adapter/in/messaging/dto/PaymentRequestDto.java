@@ -10,26 +10,21 @@ import java.util.UUID;
 public class PaymentRequestDto {
 
   @NotNull(message = "WorkOrder ID is required")
-  @JsonProperty("work_order_id")
   private UUID workOrderId;
 
   @NotNull(message = "Customer ID is required")
-  @JsonProperty("customer_id")
   private UUID customerId;
 
   @NotNull(message = "Amount is required")
   @JsonProperty("amount")
   private BigDecimal amount;
 
-  @JsonProperty("order_request")
-  @JsonIgnore
-  private OrderRequest orderRequest;
+  @NotNull(message = "First name is required")
+  private String firstName;
+
+  @JsonIgnore private OrderRequest orderRequest;
 
   @JsonIgnore private String description;
-
-  @NotNull(message = "First name is required")
-  @JsonProperty("first_name")
-  private String firstName;
 
   public PaymentRequestDto() {}
 

@@ -7,7 +7,7 @@ spring:
   cloud:
     aws:
       region:
-        static: us-east-1
+        static: ${AWS_REGION:us-east-2}
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
@@ -20,31 +20,44 @@ spring:
 
 # AWS Configuration for Production
 aws:
-  region: us-east-2
+  region: ${AWS_REGION:us-east-2}
   dynamodb:
-    endpoint: "" # Uses AWS managed endpoint (no override)
+    endpoint: ${AWS_DYNAMODB_ENDPOINT:}
   access:
     key: ${AWS_ACCESS_KEY}
   secret:
     key: ${AWS_SECRET_KEY}
   sqs:
-    payment-request-queue: payment-request-queue
-    payment-request-dlq: payment-request-dlq
-    payment-response-success-queue: payment-response-success-queue
-    payment-response-failure-queue: payment-response-failure-queue
+    payment-request-queue: ${PAYMENT_REQUEST_QUEUE:payment-request-queue}
+    payment-request-dlq: ${PAYMENT_REQUEST_DLQ:payment-request-dlq}
+    payment-response-success-queue: ${PAYMENT_RESPONSE_SUCCESS_QUEUE:payment-response-success-queue}
+    payment-response-failure-queue: ${PAYMENT_RESPONSE_FAILURE_QUEUE:payment-response-failure-queue}
     auto-create-queue: false
     max-receive-count: 3
 
 # DynamoDB Configuration for Production
 dynamodb:
-  table-name: ${DYNAMODB_TABLE_NAME:payments}
+  table-name: ${DYNAMODB_TABLE_NAME:payments-prod}
 
-# Mercado Pago Configuration (dummy values for local development)
+# Mercado Pago Configuration for Production
 mercadopago:
-  access-token: TEST-2418882740517708-021123-3284a32c834a784ab7abe89af125def1-306429912
-  public-key: TEST-c5f78030-b1af-4a2d-8ff6-0a3752bfd11e
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
 
-# Actuator Configuration for Production (minimal exposure)
+# Datadog Configuration for Production
+dd:
+  trace:
+    enabled: true
+    http:
+      client:
+        tag:
+          query-string: true
+    logs:
+      injection: true
+  service: billing-service
+  version: ${APP_VERSION:1.0}
+
+# Actuator Configuration for Production
 management:
   endpoint:
     health:
@@ -52,10 +65,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics,prometheus
+        include: health,info,metrics,prometheus
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
 
 logging:
   level:
     com.fiap.billing_service: INFO
-    com.icegreen.greenmail: WARN
-    org.springframework.mail: WARN
+    org.springframework: WARN
+    software.amazon.awssdk: WARN
