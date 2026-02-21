@@ -1,225 +1,200 @@
-# Billing Service - Payment Processing with Mercado Pago PIX
+# Serviço de Cobrança - Processamento de Pagamentos com Mercado Pago PIX
 
-**Payment microservice built with Hexagonal Architecture, Queue-based processing, and Mercado Pago integration**
-
-> 🚀 Complete documentation consolidating 7 markdown files into a single comprehensive guide
+**Microsserviço de pagamento construído com Arquitetura Hexagonal, processamento baseado em Filas, e integração Mercado Pago**
 
 ---
 
-## 📋 Table of Contents
+## 📋 Índice
 
-### I. Getting Started
+### I. Iniciando
 
-1. [Overview](#overview)
-2. [Quick Start](#quick-start) ⭐ **START HERE**
-3. [Architecture](#architecture-overview)
-4. [Technology Stack](#technology-stack)
+1. [Visão Geral](#visão-geral)
+2. [Início Rápido](#início-rápido) ⭐ **COMECE AQUI**
+3. [Visão Geral de Arquitetura](#visão-geral-de-arquitetura)
+4. [Stack de Tecnologias](#stack-de-tecnologias)
 
-### II. Development Setup
+### II. Configuração de Desenvolvimento
 
-5. [Installation & Prerequisites](#installation--prerequisites)
-6. [Environment Configuration](#environment-configuration)
-7. [Running the Application](#running-the-application)
-8. [Development Workflow](#development-workflow)
+5. [Instalação & Pré-requisitos](#instalação--pré-requisitos)
+6. [Configuração de Ambiente](#configuração-de-ambiente)
+7. [Executando a Aplicação](#executando-a-aplicação)
+8. [Fluxo de Desenvolvimento](#fluxo-de-desenvolvimento)
 
-### III. Core Concepts
+### III. Conceitos Fundamentais
 
-9. [Hexagonal Architecture Details](#hexagonal-architecture-ports--adapters)
-10. [Queue-Based Processing](#queue-based-processing)
-11. [Payment Processing Flow](#payment-processing-flow)
-12. [Payment Entity & States](#payment-entity--states)
-13. [Mercado Pago Integration](#mercado-pago-integration)
+9. [Arquitetura Hexagonal - Ports & Adapters](#arquitetura-hexagonal---ports--adapters)
+10. [Processamento Baseado em Filas](#processamento-baseado-em-filas)
+11. [Fluxo de Processamento de Pagamento](#fluxo-de-processamento-de-pagamento)
+12. [Entidade de Pagamento e Estados](#entidade-de-pagamento-e-estados)
+13. [Integração Mercado Pago](#integração-mercado-pago)
 
-### IV. Testing & Mock Data
+### IV. Testes e Dados Mock
 
-14. [Unit & Integration Tests](#development)
-15. [Testing Mock Payment Requests](#testing-mock-payment-requests)
-    - [Quick Reference](#quick-reference-sending-mock-payments)
-    - [Method 1: Java Tests](#method-1-using-java-tests)
-    - [Method 2: AWS CLI](#method-2-using-aws-cli)
-    - [Method 3: LocalStack](#method-3-using-localstack)
-    - [Method 4: Docker Commands](#method-4-using-docker-commands)
-    - [Advanced Mock Data Scenarios](#advanced-mock-data-scenarios)
+14. [Cobertura de Testes](#test-coverage) ⭐ **NOVO**
+15. [Testando Requisições Mock de Pagamento](#testando-requisições-mock-de-pagamento)
+    - [Referência Rápida](#quick-reference-sending-mock-payments)
+    - [Método 1: Testes Java](#method-1-using-java-tests)
+    - [Método 2: AWS CLI](#method-2-using-aws-cli)
+    - [Método 3: LocalStack](#method-3-using-localstack)
+    - [Método 4: Comandos Docker](#method-4-using-docker-commands)
+    - [Cenários Avançados de Dados Mock](#advanced-mock-data-scenarios)
 
-### V. CI/CD Pipeline 🚀
+### V. Pipeline CI/CD 🚀
 
-16. [CI/CD Pipeline - Overview & Implementation](#cicd-pipeline-complete-guide)
-    - [Implementation Status](#pipeline-implementation-status-)
-    - [8-Stage Pipeline Architecture](#8-stage-pipeline-architecture)
-    - [Quality Gates & Metrics](#quality-gates-and-metrics)
-17. [CI/CD Complete Setup Guide](#cicd-setup-complete-instructions)
-    - [GitHub Secrets Configuration](#github-secrets-setup-required)
-    - [SonarCloud Integration](#sonarcloud-setup-guide)
-    - [Docker Hub Setup](#docker-hub-integration-setup)
-    - [AWS Configuration](#aws-infrastructure-setup)
-    - [GitHub Environments & Branch Protection](#github-environment-and-branch-protection-setup)
-    - [Monitoring & Troubleshooting](#cicd-monitoring-execution)
-18. [CI/CD Implementation Checklist](#cicd-implementation-checklist)
-    - [Phase 1: Local Validation](#phase-1-local-validation)
-    - [Phase 2-10: Configuration Phases](#phase-2-sonarcloud-setup)
-    - [Final Verification](#final-verification)
+16. [Pipeline CI/CD - Implementação](#status-de-implementação-do-pipeline-)
+17. [CI/CD Setup: Instruções Completas](#cicd-setup-complete-instructions)
 
-### VI. Infrastructure & Deployment
+### VI. Infraestrutura e Deployment
 
-19. [Docker & Containers](#docker--deployment)
-20. [Kubernetes Deployment](#kubernetes-deployment)
-21. [Terraform Configuration](#terraform-configuration-complete-guide)
-    - [File Structure](#file-structure-1)
-    - [Deployment by Environment](#deployment-examples)
-    - [Variables & Defaults](#variables-and-configuration)
-    - [Outputs & Monitoring](#outputs)
+18. [Docker e Containers](#docker-e-deployment)
+19. [Deployment Kubernetes](#deployment-kubernetes)
+20. [Configuração Terraform](#configuração-terraform-guia-completo)
 
-### VII. Database & Migrations
+### VII. Banco de Dados
 
-22. [DynamoDB Configuration](#database--migrations)
-23. [PostgreSQL → DynamoDB Migration Guide](#dynamodb-migration-guide)
-    - [Dependency Changes](#dependency-changes-pomxml)
-    - [Entity Transformation](#entity-transformation)
-    - [Repository Refactoring](#repository-refactoring)
-    - [Configuration Updates](#configuration-updates-)
-    - [Deployment Steps](#deployment-steps)
+21. [Configuração DynamoDB](#configuração-dynamodb)
 
-### VIII. Configuration & Operations
+### VIII. Configuração e Operações
 
-24. [Configuration Reference](#configuration)
-25. [Spring Profiles](#spring-profiles)
-26. [Monitoring & Observability](#monitoring--observability)
-27. [Troubleshooting](#troubleshooting)
+22. [Configuração](#configuração)
+    - [Variáveis de Ambiente](#variáveis-de-ambiente)
+    - [Spring Profiles](#spring-profiles)
+23. [Monitoramento e Observabilidade](#monitoramento-e-observabilidade)
+24. [Resolução de Problemas](#resolução-de-problemas)
 
-### IX. Advanced Topics
+### IX. Tópicos Avançados
 
-28. [Enterprise Features](#enterprise-features)
-29. [Performance Tuning](#performance-tuning)
-30. [Support & Contributing](#support--contributions)
+25. [Recursos Empresariais](#recursos-empresariais)
+26. [Ajuste de Performance](#ajuste-de-performance)
+27. [Suporte e Contribuições](#suporte-e-contribuições)
 
 ---
 
-# Part I: Getting Started
+# Parte I: Iniciando
 
-## Overview
+## Visão Geral
 
-The Billing Service handles payment processing for order payments using:
+O Serviço de Cobrança processa pagamentos de pedidos utilizando:
 
-- **Hexagonal Architecture** (Ports & Adapters pattern) for clean separation of concerns
-- **Queue-based asynchronous processing** via AWS SQS
-- **Mercado Pago PIX integration** for secure payment processing
-- **Idempotency guarantees** (application-level + DynamoDB constraints)
-- **Dead Letter Queues** for handling failed payment attempts
-- **Amazon DynamoDB** for NoSQL persistent storage (pay-per-request capacity mode)
+- **Arquitetura Hexagonal** (padrão Ports & Adapters) para separação clara de responsabilidades
+- **Processamento assíncrono baseado em Filas** via AWS SQS
+- **Integração Mercado Pago PIX** para processamento seguro de pagamentos
+- **Garantias de Idempotência** (nível de aplicação + restrições DynamoDB)
+- **Dead Letter Queues** para tratamento de tentativas de pagamento falhadas
+- **Amazon DynamoDB** para armazenamento persistente NoSQL (modelo pay-per-request)
 
-### Key Responsibilities
+### Responsabilidades Principais
 
-- ✅ Listen to payment request messages from AWS SQS queue
-- ✅ Process payments through Mercado Pago API using PIX payment method
-- ✅ Persist payment information with order and client IDs
-- ✅ Publish payment response messages to notify other services
-- ✅ Generate QR codes for customer payment action
-- ✅ Track payment states and handle failures gracefully
+- ✅ Ouvir mensagens de requisição de pagamento da fila SQS AWS
+- ✅ Processar pagamentos através da API Mercado Pago usando método de pagamento PIX
+- ✅ Persistir informações de pagamento
+- ✅ Publicar mensagens de resposta de pagamento para notificar outros serviços
+- ✅ Rastrear estados de pagamento e tratar falhas adequadamente
 
 ---
 
-## Quick Start
+## Início Rápido
 
-### Pre-requisites
+### Pré-requisitos
 
-- Docker & Docker Compose installed
-- `.env` file with credentials (copy from `.env.example`)
-- Ports 8080, 8000 (DynamoDB Local) available
+- Docker & Docker Compose instalado
+- Arquivo `.env` com credenciais (copiar de `.env.example`)
+- Portas 8080, 8000 (DynamoDB Local) disponíveis
 
-### Option 1: Quick Start Script (Recommended)
+### Opção 1: Script de Início Rápido (Recomendado)
 
 ```bash
-# Make script executable
+# Tornar script executável
 chmod +x start.sh
 
-# Run interactive menu
+# Executar menu interativo
 ./start.sh
 ```
 
-**Menu options:**
+**Opções do menu:**
 
-1. Start full stack (App + DynamoDB Local)
-2. Start DynamoDB Local only (for local development)
-3. View logs in real-time
-4. Stop all services
-5. Clean everything (removes containers & volumes)
-6. Setup SQS queues (creates DLQ for development)
-7. Show help
+1. Iniciar stack completo (App + DynamoDB Local)
+2. Iniciar apenas DynamoDB Local (para desenvolvimento local)
+3. Visualizar logs em tempo real
+4. Parar todos os serviços
+5. Limpar tudo (remove containers & volumes)
+6. Configurar filas SQS (cria DLQ para desenvolvimento)
+7. Mostrar ajuda
 
-### Option 2: Using Makefile
+### Opção 2: Usando Makefile
 
 ```bash
-# View all available commands
+# Ver todos os comandos disponíveis
 make help
 
-# Start everything
+# Iniciar tudo
 make up
 
-# Start database only
+# Iniciar apenas banco de dados
 make db-only
 
-# View logs
+# Visualizar logs
 make logs
 
-# Stop services
+# Parar serviços
 make down
 
-# Run tests
+# Executar testes
 make test
 
-# Clean up
+# Limpar
 make clean
 ```
 
-### Option 3: Docker Compose Direct
+### Opção 3: Docker Compose Direto
 
 ```bash
-# Full stack
+# Stack completo
 docker-compose up -d --build
 
-# DynamoDB Local only
+# Apenas DynamoDB Local
 docker-compose up -d dynamodb-local
 
-# View logs
+# Visualizar logs
 docker-compose logs -f
 
-# Stop
+# Parar
 docker-compose down
 ```
 
-### Verify Installation
+### Verificar Instalação
 
 ```bash
-# Check services running
+# Verificar serviços em execução
 docker-compose ps
 
-# Health check
+# Verificar saúde
 curl http://localhost:8080/actuator/health
 
-# Verify DynamoDB is running
+# Verificar se DynamoDB está executando
 curl http://localhost:8000/
 
-# View logs
+# Visualizar logs
 docker-compose logs app
 ```
 
 ---
 
-## Architecture Overview
+## Visão Geral de Arquitetura
 
-### Hexagonal Architecture (Ports & Adapters)
+### Arquitetura Hexagonal (Ports & Adapters)
 
-The application is organized into three concentric layers:
+A aplicação está organizada em três camadas concêntricas:
 
 ```
-DOMAIN (Center) - Pure Business Logic
+DOMÍNIO (Centro) - Lógica de Negócio Pura
     ↓
-APPLICATION - Use Cases & Ports (Interfaces)
+APLICAÇÃO - Casos de Uso & Portas (Interfaces)
     ↓
-INFRASTRUCTURE - Adapters & External Systems (Periphery)
+INFRAESTRUTURA - Adaptadores & Sistemas Externos (Periferia)
 ```
 
-### Project Structure
+### Estrutura do Projeto
 
 ```
 billing-service/
@@ -278,126 +253,112 @@ billing-service/
     └── application-production.yml
 ```
 
-### Ports & Adapters Pattern
+### Padrão Ports & Adapters
 
-| Component                      | Type           | Purpose                             |
-| ------------------------------ | -------------- | ----------------------------------- |
-| **ProcessPaymentUseCase**      | Input Port     | Defines payment processing contract |
-| **PaymentQueueListener**       | Input Adapter  | Listens to SQS queue for requests   |
-| **PaymentGatewayPort**         | Output Port    | Abstracts payment gateway           |
-| **MercadoPagoAdapter**         | Output Adapter | Implements Mercado Pago integration |
-| **PaymentRepositoryPort**      | Output Port    | Abstracts DynamoDB persistence      |
-| **PaymentRepositoryAdapter**   | Output Adapter | Implements DynamoDB operations      |
-| **PaymentResponseMessagePort** | Output Port    | Abstracts response messaging        |
-| **SqsMessageSender**           | Output Adapter | Implements SQS messaging            |
+| Componente                     | Tipo                 | Propósito                                     |
+| ------------------------------ | -------------------- | --------------------------------------------- |
+| **ProcessPaymentUseCase**      | Porta de Entrada     | Define contrato de processamento de pagamento |
+| **PaymentQueueListener**       | Adaptador de Entrada | Ouve fila SQS por requisições                 |
+| **PaymentGatewayPort**         | Porta de Saída       | Abstrai gateway de pagamento                  |
+| **MercadoPagoAdapter**         | Adaptador de Saída   | Implementa integração Mercado Pago            |
+| **PaymentRepositoryPort**      | Porta de Saída       | Abstrai persistência DynamoDB                 |
+| **PaymentRepositoryAdapter**   | Adaptador de Saída   | Implementa operações DynamoDB                 |
+| **PaymentResponseMessagePort** | Porta de Saída       | Abstrai mensageria de resposta                |
+| **SqsMessageSender**           | Adaptador de Saída   | Implementa mensageria SQS                     |
 
-### Architecture Benefits
+### Benefícios da Arquitetura
 
-- 🔓 **Technology Independence**: Business logic isolated from framework details
-- 🧪 **High Testability**: Easy to test with mocks
-- 🔌 **Flexibility**: Swap implementations (e.g., different payment gateway)
-- 📦 **Maintainability**: Clear separation of concerns
-- 🚀 **Scalability**: Easy to add new adapters
+- 🔓 **Independência de Tecnologia**: Lógica de negócio isolada de detalhes do framework
+- 🧪 **Alta Testabilidade**: Fácil de testar com mocks
+- 🔌 **Flexibilidade**: Trocar implementações (ex: gateway de pagamento diferente)
+- 📦 **Manutenibilidade**: Separação clara de responsabilidades
+- 🚀 **Escalabilidade**: Fácil adicionar novos adaptadores
 
 ---
 
-## Technology Stack
+## Stack de Tecnologias
 
-| Component        | Version | Purpose                         |
-| ---------------- | ------- | ------------------------------- |
-| Java             | 21      | Language                        |
-| Spring Boot      | 4.0.2   | Web framework                   |
-| Spring Cloud AWS | 4.0.0   | AWS integration (SQS, DynamoDB) |
-| DynamoDB         | Local   | NoSQL database (On-Demand)      |
-| AWS SDK v2       | 2.24.9  | DynamoDB Enhanced client        |
-| Mercado Pago SDK | 2.1.4   | Payment gateway                 |
-| Maven            | 3.9+    | Build tool                      |
-| Docker           | 20.10+  | Containerization                |
-| Docker Compose   | 2.0+    | Container orchestration         |
-| TestContainers   | 1.19.7  | DynamoDB testing container      |
+| Componente       | Versão | Propósito                        |
+| ---------------- | ------ | -------------------------------- |
+| Java             | 21     | Linguagem                        |
+| Spring Boot      | 4.0.2  | Framework web                    |
+| Spring Cloud AWS | 4.0.0  | Integração AWS (SQS, DynamoDB)   |
+| DynamoDB         | Local  | Banco de dados NoSQL (On-Demand) |
+| AWS SDK v2       | 2.24.9 | Cliente DynamoDB Enhanced        |
+| Mercado Pago SDK | 2.1.4  | Gateway de pagamento             |
+| Maven            | 3.9+   | Ferramenta de build              |
+| Docker           | 20.10+ | Containerização                  |
+| Docker Compose   | 2.0+   | Orquestração de containers       |
+| TestContainers   | 1.19.7 | Container DynamoDB para testes   |
 
-### Key Dependencies
+### Dependências Principais
 
 ```xml
 <!-- Web & Data -->
-<spring-boot-starter-web>                          <!-- REST endpoints -->
-<spring-boot-starter-validation>                   <!-- Bean validation -->
+<spring-boot-starter-web>                          <!-- Endpoints REST -->
+<spring-boot-starter-validation>                   <!-- Validação Bean -->
 
 <!-- AWS DynamoDB -->
-<software.amazon.awssdk:dynamodb-enhanced>         <!-- DynamoDB Enhanced Client -->
-<software.amazon.awssdk:dynamodb>                  <!-- DynamoDB Core -->
+<software.amazon.awssdk:dynamodb-enhanced>         <!-- Cliente DynamoDB Enhanced -->
+<software.amazon.awssdk:dynamodb>                  <!-- Núcleo DynamoDB -->
 
-<!-- AWS Integration -->
-<spring-cloud-aws-starter-sqs>                     <!-- SQS messaging -->
+<!-- Integração AWS -->
+<spring-cloud-aws-starter-sqs>                     <!-- Mensageria SQS -->
 
-<!-- Payment Gateway -->
-<sdk-java>2.1.4</sdk-java>                         <!-- Mercado Pago SDK -->
+<!-- Gateway de Pagamento -->
+<sdk-java>2.1.4</sdk-java>                         <!-- SDK Mercado Pago -->
 
-<!-- Utilities -->
-<jackson-datatype-jsr310>                          <!-- JSON date/time handling -->
-<spring-dotenv>                                    <!-- .env file support -->
-<lombok>                                           <!-- Code generation -->
+<!-- Utilitários -->
+<jackson-datatype-jsr310>                          <!-- Manipulação JSON data/hora -->
+<spring-dotenv>                                    <!-- Suporte arquivo .env -->
+<lombok>                                           <!-- Geração de código -->
 
-<!-- Testing -->
-<spring-boot-starter-test>                         <!-- Unit & integration tests -->
-<testcontainers>1.19.7</testcontainers>           <!-- DynamoDB Local for tests -->
-<testcontainers-dynamodb>1.19.7</testcontainers>  <!-- DynamoDB container -->
+<!-- Testes -->
+<spring-boot-starter-test>                         <!-- Testes unitários & integração -->
+<testcontainers>1.19.7</testcontainers>           <!-- DynamoDB Local para testes -->
+<testcontainers-dynamodb>1.19.7</testcontainers>  <!-- Container DynamoDB -->
 ```
 
 ---
 
-# Part II: Development Setup
+# Parte II: Configuração de Desenvolvimento
 
-## Installation & Prerequisites
+## Instalação & Pré-requisitos
 
-### Prerequisites
+### Pré-requisitos
 
-- **Java 21+** (for local development)
-- **Maven 3.8+** (for building)
-- **Docker** (for DynamoDB Local - if not using AWS-managed DynamoDB)
-- **AWS credentials** (for SQS and DynamoDB access)
-- **Mercado Pago credentials**
+- **Java 21+** (para desenvolvimento local)
+- **Maven 3.8+** (para build)
+- **Docker** (para DynamoDB Local - se não usar DynamoDB gerenciado pela AWS)
+- **Credenciais AWS** (para acesso SQS e DynamoDB)
+- **Credenciais Mercado Pago**
 
-### Environment Configuration
+### Configuração de Ambiente
 
-#### 1. Create `.env` file
+#### 1. Criar arquivo `.env`
 
 ```bash
 cp .env.example .env
 ```
 
-#### 2. Configure AWS
+#### 2. Configurar AWS
 
 ```properties
-# AWS SQS Configuration
+# Configuração SQS AWS
 AWS_REGION=us-east-2
 AWS_ACCESS_KEY=your-access-key-id
 AWS_SECRET_KEY=your-secret-access-key
 ```
 
-#### 3. Configure Mercado Pago
+#### 3. Configurar Mercado Pago
 
 ```properties
-# Mercado Pago Sandbox Credentials
+# Credenciais Sandbox Mercado Pago
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-your-token-here
 MERCADOPAGO_PUBLIC_KEY=your-public-key-here
 ```
 
-#### 4. Database Configuration (Docker)
-
-```properties
-DB_USERNAME=postgres
-DB_PASSWORD=postgres123
-```
-
-#### 5. Optional: Email Service (AWS SES)
-
-```properties
-AWS_SES_FROM_EMAIL=noreply@billing-service.com
-AWS_SES_CONFIGURATION_SET=email-tracking
-```
-
-### Build Locally
+### Build Localmente
 
 ```bash
 # Clean and build
@@ -415,9 +376,9 @@ mvn spring-boot:run
 
 ---
 
-## Environment Configuration
+## Configuração de Ambiente
 
-### Required Variables
+### Variáveis Obrigatórias
 
 ```properties
 # AWS Configuration
@@ -433,169 +394,190 @@ MERCADOPAGO_PUBLIC_KEY=PKG_TEST-your-key
 SPRING_PROFILES_ACTIVE=development|homologation|production
 ```
 
-### Optional Variables
-
-```properties
-# Database (defaults to Docker values)
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres123
-
-# Email Service (AWS SES)
-AWS_SES_FROM_EMAIL=noreply@billing-service.com
-AWS_SES_CONFIGURATION_SET=email-tracking
-```
-
 ---
 
-## Running the Application
+## Executando a Aplicação
 
-### Option 1: Docker Compose (Recommended)
+### Opção 1: Docker Compose (Recomendado)
 
 ```bash
-# Full stack (App + DB)
+# Stack completo (App + BD)
 docker-compose up -d --build
 
-# View logs
+# Visualizar logs
 docker-compose logs -f app
 
-# Stop
+# Parar
 docker-compose down
 ```
 
-### Option 2: Interactive Script
+### Opção 2: Script Interativo
 
 ```bash
 chmod +x start.sh
 ./start.sh
 
-# Menu options:
-# 1 - Start full stack
-# 2 - Start database only
-# 3 - View logs
-# 4 - Stop services
-# 5 - Clean up
-# 6 - Setup SQS queues
-# 7 - Help
+# Opções do menu:
+# 1 - Iniciar stack completo
+# 2 - Iniciar apenas banco de dados
+# 3 - Visualizar logs
+# 4 - Parar serviços
+# 5 - Limpar
+# 6 - Configurar filas SQS
+# 7 - Ajuda
 ```
 
-### Option 3: Makefile
+### Opção 3: Makefile
 
 ```bash
-make help        # Show all targets
-make up          # Start everything
-make down        # Stop everything
-make logs        # View logs
-make test        # Run tests
-make db-only     # Database only
+make help        # Mostrar todos os alvos
+make up          # Iniciar tudo
+make down        # Parar tudo
+make logs        # Visualizar logs
+make test        # Executar testes
+make db-only     # Apenas banco de dados
 ```
 
-### Option 4: Local Development
+### Opção 4: Desenvolvimento Local
 
 ```bash
-# 1. Start database (Docker)
+# 1. Iniciar banco de dados (Docker)
 docker-compose -f docker-compose.dev.yml up -d
 
-# 2. Configure .env
+# 2. Configurar .env
 export SPRING_PROFILES_ACTIVE=development
 
-# 3. Run from IDE or:
+# 3. Executar via IDE ou:
 mvn spring-boot:run
 
-# Application available at http://localhost:8080
+# Aplicação disponível em http://localhost:8080
 ```
 
-### Service Access
+### Acesso aos Serviços
 
-| Service      | URL/Port                              | Credentials                          |
-| ------------ | ------------------------------------- | ------------------------------------ |
-| Application  | http://localhost:8080                 | -                                    |
-| Health Check | http://localhost:8080/actuator/health | -                                    |
-| Database     | localhost:5433                        | postgres / postgres123               |
-| PgAdmin      | http://localhost:5050                 | admin@billing-service.com / admin123 |
+| Serviço           | URL/Porta                             | Credenciais |
+| ----------------- | ------------------------------------- | ----------- |
+| Aplicação         | http://localhost:8080                 | -           |
+| Verificação Saúde | http://localhost:8080/actuator/health | -           |
+| DynamoDB Local    | http://localhost:8000                 | -           |
 
 ---
 
-## Development Workflow
+## Fluxo de Desenvolvimento
 
-### Building
+### Build
 
 ```bash
-# Clean build
+# Build limpo
 mvn clean install
 
-# Package JAR
+# Empacotar JAR
 mvn package
 
-# Skip tests
+# Pular testes
 mvn package -DskipTests
 ```
 
-### Testing
+### Testes
 
 ```bash
-# Run all tests
+# Executar todos os testes
 mvn test
 
-# Run specific test class
+# Executar classe de teste específica
 mvn test -Dtest=ProcessPaymentServiceTest
 
-# Run with coverage
+# Executar com cobertura
 mvn test jacoco:report
 
-# View coverage
+# Visualizar cobertura
 open target/site/jacoco/index.html
 ```
 
-### Code Quality
+### Cobertura de Testes
+
+Our billing service maintains high test coverage across all layers of the hexagonal architecture:
+
+**Métricas Atuais de Cobertura:**
+
+![Test Coverage Report](./cobertura.png)
+
+**Detalhes de Cobertura:**
+
+| Layer              | Coverage | Status       | Description                       |
+| ------------------ | -------- | ------------ | --------------------------------- |
+| **Domain**         | 95%+     | ✅ Excellent | Core business logic fully covered |
+| **Application**    | 90%+     | ✅ Excelente | Casos de uso e portas bem testados   |
+| **Infrastructure** | 85%+     | ✅ Bom      | Adaptadores e integrações cobertos   |
+| **Total**        | 90%+     | ✅ Excelente | Suite de testes abrangente          |
+
+**Objetivos de Cobertura:**
+
+- Manter mínimo de 85% de cobertura geral de código
+- 90%+ para lógica de negócio crítica (camadas domain & application)
+- 80%+ para adaptadores de infraestrutura
+- Executar relatórios de cobertura em cada execução de pipeline CI/CD
+
+**Executando Relatórios de Cobertura:**
 
 ```bash
-# Check style
+# Generate coverage report
+mvn clean test jacoco:report
+
+# View detailed coverage in browser
+open target/site/jacoco/index.html
+
+# Generate HTML report
+mvn test jacoco:report site
+
+# Coverage report location
+# target/site/jacoco/index.html
+```
+
+### Qualidade de Código
+
+```bash
+# Verificar estilo
 mvn checkstyle:check
 
-# Static analysis
+# Análise estática
 mvn sonar:sonar
 
 # FindBugs
 mvn findbugs:check
 ```
 
-### IDE Setup
-
-#### VS Code
+### Depuração de Banco de Dados
 
 ```bash
-# Install extensions
-code --install-extension redhat.java
-code --install-extension vscjava.vscode-maven
-code --install-extension vscjava.vscode-spring-boot
+# Conectar ao DynamoDB Local via AWS CLI
+aws dynamodb scan \
+  --table-name payments-dev \
+  --endpoint-url http://localhost:8000 \
+  --region us-east-2
+
+# Consultar pagamento por order_id (usando GSI)
+aws dynamodb query \
+  --table-name payments-dev \
+  --index-name OrderIdIndex \
+  --key-condition-expression "orderId = :id" \
+  --expression-attribute-values '{":id":{"S":"uuid-do-pedido"}}' \
+  --endpoint-url http://localhost:8000 \
+  --region us-east-2
+
+# Ver todos os pagamentos com status PENDING
+aws dynamodb scan \
+  --table-name payments-dev \
+  --filter-expression "#status = :status" \
+  --expression-attribute-names '{"#status":"status"}' \
+  --expression-attribute-values '{":status":{"S":"PENDING"}}' \
+  --endpoint-url http://localhost:8000 \
+  --region us-east-2
 ```
 
-#### IntelliJ IDEA
+### Log
 
-1. Open project
-2. Maven → Download Sources & Javadocs
-3. Run → Run 'BillingServiceApplication'
-4. File → Project Structure → Project SDK → Java 21
-
-### Database Debugging
-
-```bash
-# Connect to database
-docker-compose exec postgres psql -U postgres -d billing_db
-
-# List tables
-\dt
-
-# Query payments
-SELECT * FROM payments;
-
-# View payment details
-SELECT id, order_id, amount, status, created_at FROM payments WHERE order_id = 'xxx';
-```
-
-### Logging
-
-**Correlation ID Tracking:**
+**Rastreamento de ID de Correlação:**
 
 ```java
 @RestController
@@ -603,32 +585,32 @@ public class HealthController {
     @GetMapping("/actuator/health")
     public ResponseEntity<?> health() {
         String correlationId = MDC.get("correlationId");
-        // All logs include this ID for tracing
+        // Todos os logs incluem este ID para rastreamento
         return ResponseEntity.ok(Map.of("status", "UP"));
     }
 }
 ```
 
-**Log Levels:**
+**Níveis de Log:**
 
-- **DEBUG**: Development (verbose logging)
-- **INFO**: Staging (important events)
-- **WARN**: Duplicate detection, timeouts
-- **ERROR**: Exceptions, failures
-- **FATAL**: System-critical failures
+- **DEBUG**: Desenvolvimento (log verbose)
+- **INFO**: Estágio (eventos importantes)
+- **WARN**: Detecção de duplicatas, timeouts
+- **ERROR**: Exceções, falhas
+- **FATAL**: Falhas críticas do sistema
 
 ```bash
-# View logs with correlation ID
+# Ver logs com ID de correlação
 docker-compose logs | grep "correlationId"
 ```
 
 ---
 
-# Part III: Core Concepts
+# Parte III: Conceitos Fundamentais
 
-## Hexagonal Architecture - Ports & Adapters
+## Arquitetura Hexagonal - Ports & Adapters
 
-### Domain Layer (Core Business Logic)
+### Camada de Domínio (Lógica de Negócio Principal)
 
 ```java
 @DynamoDbBean
@@ -649,7 +631,7 @@ public enum PaymentStatus {
 }
 ```
 
-### Application Layer (Use Cases)
+### Camada de Aplicação (Casos de Uso)
 
 ```java
 // Input Port - Defines contract
@@ -674,7 +656,7 @@ public interface PaymentResponseMessagePort {
 }
 ```
 
-### Infrastructure Layer (Adapters)
+### Camada de Infraestrutura (Adaptadores)
 
 ```java
 // Input Adapter - SQS Listener
@@ -713,9 +695,9 @@ public class SqsMessageSender implements PaymentResponseMessagePort {
 
 ---
 
-## Queue-Based Processing
+## Processamento Baseado em Filas
 
-### Architecture Overview
+### Visão Geral de Arquitetura
 
 ```
 Payment Request → SQS Queue → PaymentQueueListener → ProcessPaymentService
@@ -725,9 +707,9 @@ Payment Request → SQS Queue → PaymentQueueListener → ProcessPaymentService
                                     SuccessQueue OR FailureQueue
 ```
 
-### Payment Request Queue
+### Fila de Requisição de Pagamento
 
-**Queue Configuration:**
+**Configuração da Fila:**
 
 - **Name**: `payment-request-queue`
 - **Visibility Timeout**: 300 seconds (5 minutes)
@@ -735,62 +717,49 @@ Payment Request → SQS Queue → PaymentQueueListener → ProcessPaymentService
 - **Acknowledgment**: ON_SUCCESS (removed after processing)
 - **Purpose**: Receives payment requests from order service
 
-**Message Format:**
+**Formato de Mensagem:**
 
 ```json
 {
-  "order_id": "550e8400-e29b-41d4-a716-446655440000",
-  "client_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+  "workOrderId": "550e8400-e29b-41d4-a716-446655440000",
+  "customerId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
   "amount": 150.5,
-  "customer_email": "customer@example.com",
-  "customer_document": "12345678900",
-  "customer_name": "John Doe",
-  "description": "Payment for order #ORD-2024-001"
+  "firtName": "John Doe"
 }
 ```
 
-### Payment Response Queues
+### Filas de Resposta de Pagamento
 
-**Success Queue:**
+**Fila de Sucesso:**
 
 - **Name**: `payment-response-success-queue`
 - **Triggers**: When payment status is APPROVED or PROCESSING
 - **Purpose**: Notifies order service of successful payment
 
-**Failure Queue:**
+**Fila de Falha:**
 
 - **Name**: `payment-response-failure-queue`
 - **Triggers**: When payment status is REJECTED or FAILED
 - **Purpose**: Notifies order service of payment rejection
 
-**Response Message Format:**
+**Formato de Mensagem de Resposta:**
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "orderId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-  "clientId": "550e8400-e29b-41d4-a716-446655440111",
-  "amount": 150.5,
-  "status": "APPROVED",
-  "externalPaymentId": "1234567890",
-  "paymentMethod": "pix",
-  "qrCode": "00020126580014br.gov.bcb.brcode...",
-  "qrCodeBase64": "iVBORw0KGgoAAAANSUhEUgAAAA...",
-  "createdAt": "2024-02-16T10:00:00",
-  "processedAt": "2024-02-16T10:00:30"
+  "workOrderId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 }
 ```
 
 ### Dead Letter Queue (DLQ)
 
-**Configuration:**
+**Configuração:**
 
 - **Name**: `payment-request-dlq`
 - **Max Receive Count**: 3
 - **Purpose**: Stores permanently failed messages
 - **Monitoring**: DLQ messages indicate processing failures
 
-**Setup (for LocalStack development):**
+**Configuração (para desenvolvimento LocalStack):**
 
 ```bash
 ./start.sh
@@ -804,13 +773,13 @@ chmod +x scripts/setup-sqs-dlq.sh
 ./scripts/setup-sqs-dlq.sh
 ```
 
-### Message Idempotency
+### Idempotência de Mensagem
 
-**Three-layer defense against duplicate processing:**
+**Defesa tripla contra processamento duplicado:**
 
-#### 1. Application-Level Check
+#### 1. Verificação em Nível de Aplicação
 
-Before processing, the service checks:
+Antes de processar, o serviço verifica:
 
 ```java
 Optional<Payment> existing = paymentRepository.findByOrderId(orderId);
@@ -819,14 +788,14 @@ if (existing.isPresent() && !existing.get().getStatus().isPending()) {
 }
 ```
 
-#### 2. Database Unique Constraint
+#### 2. Restrição Única de Banco de Dados
 
 ```sql
 ALTER TABLE payments
 ADD CONSTRAINT uk_payments_order_id UNIQUE (order_id);
 ```
 
-#### 3. SQS Visibility Timeout
+#### 3. Timeout de Visibilidade SQS
 
 - Message invisible for 5 minutes after receipt
 - Prevents duplicate processing from concurrent instances
@@ -834,9 +803,9 @@ ADD CONSTRAINT uk_payments_order_id UNIQUE (order_id);
 
 ---
 
-## Payment Processing Flow
+## Fluxo de Processamento de Pagamento
 
-### Detailed Sequence
+### Sequência Detalhada
 
 ```
 1. Order Service
@@ -886,79 +855,11 @@ ERROR HANDLING:
 └─ Monitor DLQ for manual intervention
 ```
 
-### Code Sequence
-
-**1. Listen for Payment Request:**
-
-```java
-@Component
-public class PaymentQueueListener {
-    @SqsListener("${aws.sqs.payment-request-queue}")
-    public void handlePaymentRequest(PaymentRequestDto request) {
-        processPaymentService.process(request);
-    }
-}
-```
-
-**2. Process Payment:**
-
-```java
-@Service
-public class ProcessPaymentService implements ProcessPaymentUseCase {
-    public PaymentResponse process(PaymentRequestDto request) {
-        // Check idempotency
-        Optional<Payment> existing = paymentRepository.findByOrderId(request.getOrderId());
-        if (existing.isPresent()) return mapToResponse(existing.get());
-
-        // Create new payment
-        Payment payment = new Payment(
-            request.getOrderId(),
-            request.getClientId(),
-            request.getAmount()
-        );
-        payment.setStatus(PaymentStatus.PENDING);
-        paymentRepository.save(payment);
-
-        // Process via Mercado Pago
-        payment.setStatus(PaymentStatus.PROCESSING);
-        PaymentResponse mpResponse = paymentGateway.createOrder(request);
-
-        // Update with response
-        payment.setExternalPaymentId(mpResponse.getId());
-        payment.setQrCode(mpResponse.getQrCode());
-        payment.setQrCodeBase64(mpResponse.getQrCodeBase64());
-        payment.setStatus(mpResponse.getStatus());
-        payment.setProcessedAt(Instant.now());
-        paymentRepository.save(payment);
-
-        // Publish response
-        messagePort.publishPaymentResponse(payment);
-
-        return mapToResponse(payment);
-    }
-}
-```
-
-**3. Publish Response:**
-
-```java
-@Component
-public class SqsMessageSender implements PaymentResponseMessagePort {
-    public void publishPaymentResponse(Payment payment) {
-        String queueUrl = payment.getStatus().isSuccess()
-            ? successQueueUrl
-            : failureQueueUrl;
-
-        sqsTemplate.convertAndSend(queueUrl, mapToDto(payment));
-    }
-}
-```
-
 ---
 
-## Payment Entity & States
+## Entidade de Pagamento e Estados
 
-### Payment Entity Fields
+### Campos de Entidade de Pagamento
 
 | Field               | Type          | Description                                     |
 | ------------------- | ------------- | ----------------------------------------------- |
@@ -975,33 +876,7 @@ public class SqsMessageSender implements PaymentResponseMessagePort {
 | `processedAt`       | Instant       | Payment processing completion                   |
 | `errorMessage`      | Text          | Error details if status = FAILED                |
 
-### Database Schema
-
-```sql
-CREATE TABLE payments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    order_id UUID NOT NULL UNIQUE,
-    client_id UUID NOT NULL,
-    amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
-    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
-    external_payment_id VARCHAR(255),
-    payment_method VARCHAR(50) DEFAULT 'pix',
-    qr_code TEXT,
-    qr_code_base64 TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    processed_at TIMESTAMP,
-    error_message TEXT,
-
-    -- Indexes for query performance
-    INDEX idx_order_id (order_id),
-    INDEX idx_client_id (client_id),
-    INDEX idx_status (status),
-    INDEX idx_created_at (created_at),
-    INDEX idx_external_payment_id (external_payment_id)
-);
-```
-
-### Payment Status Enum
+### Enum de Status de Pagamento
 
 ```java
 public enum PaymentStatus {
@@ -1023,17 +898,16 @@ public enum PaymentStatus {
 
 ---
 
-## Mercado Pago Integration
+## Integração Mercado Pago
 
-### Overview
+### Visão Geral
 
-- **Gateway**: Mercado Pago (Production or Sandbox)
-- **Payment Method**: PIX (Instant Payment System)
-- **Integration Model**: Orders API (`/v1/orders`)
-- **QR Code**: Generated for customer payment action
-- **Testing**: Sandbox environment with test credentials
+- **Gateway**: Mercado Pago (Produção ou Sandbox)
+- **Método de Pagamento**: PIX (Sistema de Pagamento Instantâneo)
+- **Modelo de Integração**: API de Pedidos (`/v1/orders`)
+- **Teste**: Ambiente Sandbox com credenciais de teste
 
-### Configuration
+### Configuração
 
 ```yaml
 # application.yml
@@ -1042,19 +916,19 @@ mercadopago:
   public-key: ${MERCADOPAGO_PUBLIC_KEY} # PKG_TEST-your-key
 ```
 
-### Orders API Endpoint
+### Endpoint de API de Pedidos
 
 **Base URL:** `https://api.mercadopago.com/v1/orders`
 
-**Authentication:**
+**Autenticação:**
 
-- Method: Bearer Token
+- Método: Bearer Token
 - Header: `Authorization: Bearer {access-token}`
 
-**Idempotency:**
+**Idempotência:**
 
 - Header: `X-Idempotency-Key: {UUID}`
-- Prevents duplicate order creation
+- Previne criação duplicada de pedidos
 
 **Request Body:**
 
@@ -1109,7 +983,7 @@ mercadopago:
 }
 ```
 
-### Payment States
+### Estados de Pagamento
 
 | Status     | Meaning                   | Next State        | Action                 |
 | ---------- | ------------------------- | ----------------- | ---------------------- |
@@ -1119,113 +993,22 @@ mercadopago:
 | REJECTED   | Payment declined          | (Final)           | Notify customer        |
 | FAILED     | Technical error           | PENDING           | Retry available        |
 
-### QR Code Handling
-
-**String Format:**
-
-```
-00020126580014br.gov.bcb.brcode0136...
-```
-
-**Base64 Image Format:**
-
-```
-data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-```
-
-**Client Usage:**
-
-```javascript
-// Display QR code in UI
-<img src={qrCodeBase64} alt="PIX QR Code" />;
-
-// Or use string format
-QRCode.toCanvas(document.getElementById("qrcode"), qrCode, function (error) {
-  if (error) console.error(error);
-});
-```
-
-### Production Considerations
-
-When moving to production (non-sandbox):
-
-1. **Replace credentials:**
-
-   ```properties
-   MERCADOPAGO_ACCESS_TOKEN=APP_USR-production-token
-   MERCADOPAGO_PUBLIC_KEY=PKG_PROD-production-key
-   ```
-
-2. **Update queue names:**
-
-   ```yaml
-   aws.sqs:
-     payment-request-queue: production-payment-request
-     payment-response-success-queue: production-payment-success
-     payment-response-failure-queue: production-payment-failure
-   ```
-
-3. **Update API endpoints** if integrating additional services
-
-4. **Enable API authentication** for external queue access
-
 ---
 
-# Part IV: Testing & Mock Data
+# Parte IV: Testes e Dados Mock
 
-## Testing Mock Payment Requests
+## Testando Requisições Mock de Pagamento
 
-### Quick Reference: Sending Mock Payments
+### Referência Rápida: Enviando Pagamentos Mock
 
-#### Option 1: Using Java Tests (Fastest)
-
-```bash
-# Send 1 message
-mvn test -Dtest=SqsMockDataSenderTest#testSendSingleMockPaymentRequest
-
-# Send 5 messages
-mvn test -Dtest=SqsMockDataSenderTest#testSendBatchMockPaymentRequests
-
-# Send with custom amount
-mvn test -Dtest=SqsMockDataSenderTest#testSendCustomPaymentRequest
-```
-
-#### Option 2: Using Bash Script
+#### Opção 1: Usando Testes Java (Mais Rápido)
 
 ```bash
-# Make executable
-chmod +x send-mock-payment.sh
-
-# Send 1 message with default amount
-./send-mock-payment.sh
-
-# Send 5 messages with $299.99
-./send-mock-payment.sh 5 299.99
-
-# Send with LocalStack
-USE_LOCALSTACK=true ./send-mock-payment.sh 3 150.00
+# Send message
+mvn test
 ```
 
-#### Option 3: Using Python Script
-
-```bash
-# Install boto3 (first time only)
-pip install boto3
-
-# Make executable
-chmod +x send_mock_payment.py
-
-# Send 1 message
-python send_mock_payment.py
-
-# Send 10 messages with LocalStack
-python send_mock_payment.py --count 10 --localstack
-
-# Send with specific amount
-python send_mock_payment.py --count 5 --amount 299.99
-```
-
-#### Option 4: Using AWS CLI
+#### Opção 2: Usando AWS CLI
 
 ```bash
 # Single message
@@ -1235,330 +1018,62 @@ aws sqs send-message \
   --region us-east-2
 ```
 
-### Tool Comparison
+### Comparação de Ferramentas
 
-| Tool              | Best For                  | Command                                     |
-| ----------------- | ------------------------- | ------------------------------------------- |
-| **Java Tests**    | Development, CI/CD        | `mvn test -Dtest=SqsMockDataSenderTest#...` |
-| **Bash Script**   | Quick testing, automation | `./send-mock-payment.sh`                    |
-| **Python Script** | More control, flexibility | `python send_mock_payment.py`               |
-| **AWS CLI**       | Production, direct SQS    | `aws sqs send-message`                      |
-| **LocalStack**    | Local development         | `./init-localstack.sh`                      |
-
-### Method 1: Using Java Tests
-
-#### Simple Test
-
-```bash
-cd billing-service
-mvn test -Dtest=SqsMockDataSenderTest#testSendSingleMockPaymentRequest
-```
-
-#### Batch Test (Send 5 messages)
-
-```bash
-mvn test -Dtest=SqsMockDataSenderTest#testSendBatchMockPaymentRequests
-```
-
-#### Custom Amount Test
-
-```bash
-mvn test -Dtest=SqsMockDataSenderTest#testSendCustomPaymentRequest
-```
-
-### Method 2: Using AWS CLI
-
-#### Prerequisites
-
-```bash
-# Install AWS CLI
-brew install awscli  # macOS
-apt-get install awscliv2  # Linux
-choco install awscli  # Windows
-
-# Configure credentials
-aws configure
-# Enter your AWS credentials
-```
-
-#### Send Single Message
-
-```bash
-# Save JSON to file
-cat > payment_request.json << 'EOF'
-{
-  "work_order_id": "550e8400-e29b-41d4-a716-446655440000",
-  "client_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-  "budget_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-  "description": "Payment for services",
-  "order_request": {
-    "type": "online",
-    "external_reference": "ORD-20260217-001",
-    "total_amount": "150.50",
-    "payer": {
-      "email": "customer@example.com",
-      "first_name": "John Doe"
-    },
-    "transactions": {
-      "payments": [
-        {
-          "amount": "150.50",
-          "payment_method": {
-            "id": "pix",
-            "type": "bank_transfer"
-          }
-        }
-      ]
-    }
-  }
-}
-EOF
-
-# Send to SQS
-aws sqs send-message \
-  --queue-url https://sqs.us-east-2.amazonaws.com/YOUR_ACCOUNT_ID/payment-request-queue \
-  --message-body file://payment_request.json \
-  --region us-east-2
-```
-
-#### Send Multiple Messages
-
-```bash
-for i in {1..5}; do
-  aws sqs send-message \
-    --queue-url https://sqs.us-east-2.amazonaws.com/YOUR_ACCOUNT_ID/payment-request-queue \
-    --message-body "{\"work_order_id\":\"550e8400-e29b-41d4-a716-446655440000\",\"client_id\":\"6ba7b810-9dad-11d1-80b4-00c04fd430c8\",\"budget_id\":\"6ba7b811-9dad-11d1-80b4-00c04fd430c8\",\"order_request\":{\"type\":\"online\",\"external_reference\":\"ORD-20260217-00$i\",\"total_amount\":\"100.00\",\"payer\":{\"email\":\"customer$i@example.com\",\"first_name\":\"Customer $i\"},\"transactions\":{\"payments\":[{\"amount\":\"100.00\",\"payment_method\":{\"id\":\"pix\",\"type\":\"bank_transfer\"}}]}}}" \
-    --region us-east-2
-done
-```
-
-### Method 3: Using LocalStack
-
-#### Start LocalStack with Docker
-
-```bash
-# Using docker-compose.yml
-cd billing-service
-
-# Add to docker-compose.yml if not present:
-version: '3.8'
-services:
-  localstack:
-    image: localstack/localstack:latest
-    ports:
-      - "4566:4566"
-    environment:
-      - SERVICES=sqs
-      - DEBUG=1
-      - DATA_DIR=/tmp/localstack/data
-      - DOCKER_HOST=unix:///var/run/docker.sock
-    volumes:
-      - ./init-local-stack.sh:/docker-entrypoint-initaws.d/init-localstack.sh
-
-# Start LocalStack
-docker-compose up -d localstack
-
-# Check if it's running
-curl http://localhost:4566/_localstack/health
-```
-
-#### Create Queue in LocalStack
-
-```bash
-# Create SQS queue
-aws --endpoint-url http://localhost:4566 \
-  sqs create-queue \
-  --queue-name payment-request-queue \
-  --region us-east-2
-
-# List queues
-aws --endpoint-url http://localhost:4566 \
-  sqs list-queues \
-  --region us-east-2
-
-# Get queue URL
-QUEUE_URL=$(aws --endpoint-url http://localhost:4566 \
-  sqs get-queue-url \
-  --queue-name payment-request-queue \
-  --region us-east-2 \
-  --query 'QueueUrl' \
-  --output text)
-
-echo $QUEUE_URL
-```
-
-#### Send Message to LocalStack
-
-```bash
-QUEUE_URL="http://localhost:4566/000000000000/payment-request-queue"
-
-aws --endpoint-url http://localhost:4566 \
-  sqs send-message \
-  --queue-url $QUEUE_URL \
-  --message-body '{"work_order_id":"550e8400-e29b-41d4-a716-446655440000","client_id":"6ba7b810-9dad-11d1-80b4-00c04fd430c8","budget_id":"6ba7b811-9dad-11d1-80b4-00c04fd430c8","order_request":{"type":"online","external_reference":"ORD-20260217-001","total_amount":"150.50","payer":{"email":"customer@example.com","first_name":"John Doe"},"transactions":{"payments":[{"amount":"150.50","payment_method":{"id":"pix","type":"bank_transfer"}}]}}}' \
-  --region us-east-2
-```
-
-#### View Messages in Queue
-
-```bash
-QUEUE_URL="http://localhost:4566/000000000000/payment-request-queue"
-
-# Receive messages
-aws --endpoint-url http://localhost:4566 \
-  sqs receive-message \
-  --queue-url $QUEUE_URL \
-  --region us-east-2
-```
-
-### Method 4: Using Docker Commands
-
-#### Build and Run Container
-
-```bash
-# Build image
-docker build -t billing-service:latest .
-
-# Run tests in container
-docker run --rm \
-  --env AWS_ACCESS_KEY=test \
-  --env AWS_SECRET_KEY=test \
-  --env AWS_REGION=us-east-2 \
-  billing-service:latest \
-  mvn test -Dtest=SqsMockDataSenderTest#testSendSingleMockPaymentRequest
-```
-
-### Advanced Mock Data Scenarios
-
-#### Scenario 1: Successful Payment
-
-```json
-{
-  "work_order_id": "550e8400-e29b-41d4-a716-446655440000",
-  "client_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-  "budget_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-  "order_request": {
-    "external_reference": "ORD-SUCCESS",
-    "total_amount": "100.00",
-    "payer": {
-      "email": "success@test.com",
-      "first_name": "Success Test"
-    },
-    "transactions": {
-      "payments": [
-        {
-          "amount": "100.00",
-          "payment_method": { "id": "pix", "type": "bank_transfer" }
-        }
-      ]
-    }
-  }
-}
-```
-
-#### Scenario 2: Failure Simulation
-
-```json
-{
-  "work_order_id": "550e8400-e29b-41d4-a716-446655440001",
-  "client_id": "invalid-uuid",
-  "budget_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-  "order_request": {
-    "external_reference": "ORD-FAIL",
-    "total_amount": "invalid",
-    "payer": {
-      "email": "fail@test.com",
-      "first_name": "Fail Test"
-    },
-    "transactions": {
-      "payments": [
-        {
-          "amount": "invalid",
-          "payment_method": { "id": "pix", "type": "bank_transfer" }
-        }
-      ]
-    }
-  }
-}
-```
-
-#### Scenario 3: Large Amount (stress test)
-
-```json
-{
-  "work_order_id": "550e8400-e29b-41d4-a716-446655440002",
-  "client_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-  "budget_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-  "order_request": {
-    "external_reference": "ORD-LARGE",
-    "total_amount": "99999.99",
-    "payer": {
-      "email": "large@test.com",
-      "first_name": "Large Amount"
-    },
-    "transactions": {
-      "payments": [
-        {
-          "amount": "99999.99",
-          "payment_method": { "id": "pix", "type": "bank_transfer" }
-        }
-      ]
-    }
-  }
-}
-```
+| Ferramenta      | Melhor Para            | Comando                |
+| --------------- | ---------------------- | ---------------------- |
+| **Testes Java** | Desenvolvimento, CI/CD | `mvn test`             |
+| **AWS CLI**     | Produção, SQS direto   | `aws sqs send-message` |
 
 ---
 
-# Part V: CI/CD Pipeline
+# Parte V: Pipeline CI/CD
 
-## CI/CD Pipeline: Complete Guide
+### Status de Implementação do Pipeline ✅
 
-### Pipeline Implementation Status ✅
-
-The GitHub Actions CI/CD pipeline has been **fully implemented** with all required stages:
+O pipeline GitHub Actions CI/CD foi **totalmente implementado** com todos os estágios necessários:
 
 **Build → Test → Quality Check → Docker Build → Security Scan → Deploy (Dev/Homolog/Prod)**
 
-### What Was Implemented
+**O que Foi Implementado**
 
-#### 1. GitHub Actions Workflow
+#### 1. Workflow GitHub Actions
 
-- **File**: `.github/workflows/ci-cd.yml`
-- **Triggers**: Push to main/develop, Pull requests, Manual workflow dispatch
-- **8 Sequential Stages**:
-  1. Build Application (Maven compile + package)
-  2. Automated Tests (JUnit + Spring integration tests)
-  3. SonarQube Quality Gate (Code analysis + metrics)
-  4. Docker Build & Push (Docker Hub, multi-stage)
-  5. Security Scan (Trivy vulnerability scanning)
-  6. Deploy Development (AWS EKS + Terraform)
-  7. Deploy Homologation (5 min after Dev)
-  8. Deploy Production (Manual approval required)
+- **Arquivo**: `.github/workflows/ci-cd.yml`
+- **Gatilhos**: Push para main/develop, Pull requests, Dispatch manual de workflow
+- **8 Estágios Sequenciais**:
+  1. Build da Aplicação (Maven compile + package)
+  2. Testes Automatizados (JUnit + testes de integração Spring)
+  3. Portal de Qualidade SonarQube (Análise de código + métricas)
+  4. Build Docker e Push (Docker Hub, multi-stage)
+  5. Varredura de Segurança (Trivy vulnerability scanning)
+  6. Deploy Desenvolvimento (AWS EKS + Terraform)
+  7. Deploy Homologação (5 min após Dev)
+  8. Deploy Produção (Aprovação manual necessária)
 
-#### 2. Maven Configuration
+#### 2. Configuração Maven
 
-- **Plugins Added**:
-  - `maven-surefire-plugin`: Run unit tests, generate reports
-  - `maven-failsafe-plugin`: Run integration tests
-  - `jacoco-maven-plugin`: Code coverage analysis (80% threshold)
-  - `sonar-maven-plugin`: SonarQube integration
-  - Surefire & Failsafe report plugins
+- **Plugins Adicionados**:
+  - `maven-surefire-plugin`: Executar testes unitários, gerar relatórios
+  - `maven-failsafe-plugin`: Executar testes de integração
+  - `jacoco-maven-plugin`: Análise de cobertura de código (threshold 80%)
+  - `sonar-maven-plugin`: Integração SonarQube
+  - Plugins de relatório Surefire & Failsafe
 
-- **File**: `pom.xml`
-- **Coverage Target**: >= 80% (enforced)
+- **Arquivo**: `pom.xml`
+- **Alvo de Cobertura**: >= 80% (imposto)
 
-#### 3. Terraform Configuration
+#### 3. Configuração Terraform
 
-- **Enhanced Variables**:
-  - `image_repository`: Docker registry source
-  - `image_tag`: Dynamic image tag (commit SHA)
-- **New Outputs**:
-  - `deployed_image_tag`: For rollback capability
-  - `deployed_image`: Full image reference
-- **Files**: `terraform/variables.tf`, `terraform/outputs.tf`
+- **Variáveis Aprimoradas**:
+  - `image_repository`: Fonte de registro Docker
+  - `image_tag`: Tag de imagem dinâmica (commit SHA)
+- **Novas Saídas**:
+  - `deployed_image_tag`: Para capacidade de rollback
+  - `deployed_image`: Referência de imagem completa
+- **Arquivos**: `terraform/variables.tf`, `terraform/outputs.tf`
 
-### 8-Stage Pipeline Architecture
+### Arquitetura de Pipeline com 8 Estágios
 
 ```
 PR to main:
@@ -1580,46 +1095,46 @@ Push to main:
   └─ Auto-rollback if health check fails
 ```
 
-**Total Pipeline Time**: ~20-25 minutes (Dev + Homolog + approval wait)
+**Tempo Total do Pipeline**: ~20-25 minutos (Dev + Homolog + espera de aprovação)
 
-### Quality Gates and Metrics
+### Portais de Qualidade e Métricas
 
-#### Code Quality (SonarQube)
+#### Qualidade de Código (SonarQube)
 
-- Coverage: >= 80% ❌ Will fail deployment
+- Cobertura: >= 80% ❌ Falhará deployment
 - Bugs: 0
-- Vulnerabilities: 0
+- Vulnerabilidades: 0
 - Code Smells: < threshold
-- Duplicated Lines: < 5%
+- Linhas Duplicadas: < 5%
 
-#### Security
+#### Segurança
 
-- Trivy scans all Docker images
-- CVE database in GitHub Security tab
-- Critical/High severity items logged (non-blocking)
+- Trivy verifica todas as imagens Docker
+- Base de dados CVE em aba de Segurança GitHub
+- Itens de severidade Crítica/Alta registrados (não bloqueador)
 
-#### Testing
+#### Testes
 
-- JaCoCo enforces 80% code coverage
-- Unit tests + integration tests required
-- Test reports published to GitHub Actions
+- JaCoCo garante cobertura de 80% de código
+- Testes unitários + testes de integração obrigatórios
+- Relatórios de testes publicados no GitHub Actions
 
-### Required Infrastructure (Pre-Setup)
+### Infraestrutura Necessária (Pré-Setup)
 
-#### Cloud Resources (AWS)
+#### Recursos na Nuvem (AWS)
 
-- ✅ 3 EKS clusters: `billing-service-dev`, `billing-service-homolog`, `billing-service-prod`
-- ✅ S3 bucket for Terraform state (with versioning)
-- ✅ DynamoDB table for Terraform locks
-- ✅ IAM role: `github-actions-billing-service` (OIDC trust)
+- ✅ 3 clusters EKS: `billing-service-dev`, `billing-service-homolog`, `billing-service-prod`
+- ✅ Bucket S3 para estado Terraform (com versionamento)
+- ✅ Tabela DynamoDB para locks Terraform
+- ✅ Role IAM: `github-actions-billing-service` (confiança OIDC)
 
-#### External Services
+#### Serviços Externos
 
-- ✅ SonarCloud account (free tier available)
-- ✅ Docker Hub account (free public repositories)
-- ✅ GitHub repository with branch protection
+- ✅ Conta SonarCloud (plano gratuito disponível)
+- ✅ Conta Docker Hub (repositórios públicos gratuitos)
+- ✅ Repositório GitHub com proteção de branch
 
-#### Credentials Required (11 secrets)
+#### Credenciais Necessárias (11 secrets)
 
 ```
 Docker Hub:
@@ -1636,20 +1151,20 @@ AWS:
   ├─ AWS_REGION
   └─ TF_BACKEND_BUCKET
 
-Optional (if not using OIDC):
+Optional (se não usar OIDC):
   ├─ AWS_ACCESS_KEY_ID
   └─ AWS_SECRET_ACCESS_KEY
 ```
 
 ---
 
-## CI/CD Setup: Complete Instructions
+## CI/CD Setup: Instruções Completas
 
-### GitHub Secrets: Setup Required
+### GitHub Secrets: Setup Necessário
 
-All secrets must be configured in: **Settings > Secrets and variables > Actions**
+Todos os secrets devem ser configurados em: **Settings > Secrets and variables > Actions**
 
-#### Docker Hub Integration
+#### Integração Docker Hub
 
 ```
 DOCKER_HUB_USERNAME
@@ -1662,85 +1177,7 @@ DOCKER_HUB_TOKEN
 └─ Permissões: Read & Write
 ```
 
-#### AWS Integration (OIDC Recomendado)
-
-**Opção 1: Using GitHub OpenID Connect (RECOMENDADO - mais seguro)**
-
-```
-AWS_ROLE_TO_ASSUME
-├─ Descrição: ARN da role IAM para assumir
-├─ Formato: arn:aws:iam::123456789012:role/github-actions-billing-service
-└─ Permissões: EKS, Terraform backend access
-```
-
-**Setup AWS OIDC (uma única vez):**
-
-```bash
-# 1. Criar o OIDC provider no AWS
-aws iam create-open-id-connect-provider \
-  --url https://token.actions.githubusercontent.com \
-  --client-id-list sts.amazonaws.com \
-  --thumbprint-list 1b511abead59c6ce207077c0ef0cae8f148d8e93 \
-  --region us-east-1
-
-# 2. Criar IAM Role: github-actions-billing-service
-# Trust Policy:
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_ORG/organization:ref:refs/heads/main"
-        }
-      }
-    }
-  ]
-}
-
-# 3. Attach permissions: AmazonEKSClusterPolicy, AmazonECSTaskExecutionRolePolicy
-# 4. Adicionar inline policy para Terraform backend:
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:GetObjectVersion",
-        "dynamodb:PutItem",
-        "dynamodb:GetItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:DescribeTable"
-      ],
-      "Resource": [
-        "arn:aws:s3:::your-terraform-bucket/*",
-        "arn:aws:dynamodb:*:123456789012:table/terraform-locks"
-      ]
-    }
-  ]
-}
-```
-
-**Opção 2: Access Keys diretas (menos seguro)**
-
-```
-AWS_ACCESS_KEY_ID
-└─ Descrição: Access Key ID da sua conta AWS
-
-AWS_SECRET_ACCESS_KEY
-└─ Descrição: Secret Access Key da sua conta AWS
-```
-
-#### SonarQube Cloud Integration
+#### Integração SonarQube Cloud
 
 ```
 SONAR_TOKEN
@@ -1758,7 +1195,7 @@ SONAR_HOST_URL
 └─ Para self-hosted: https://seu-sonarqube.com
 ```
 
-#### AWS Terraform Backend
+#### Backend AWS Terraform
 
 ```
 TF_BACKEND_BUCKET
@@ -1771,18 +1208,18 @@ AWS_REGION
 └─ Valor: us-east-1 (ou a região desejada)
 ```
 
-### SonarCloud Setup Guide
+### Guia de Setup SonarCloud
 
 #### 1. Criar Organização no SonarCloud
 
 ```bash
 # Acesse https://sonarcloud.io
-# 1. Sign up com GitHub
+# 1. Cadastre-se com GitHub
 # 2. Create Organization → Link GitHub Organization
 # 3. Selecionar repositório "organization"
 ```
 
-#### 2. Criar Project
+#### 2. Criar Projeto
 
 ```bash
 # No SonarCloud:
@@ -1807,7 +1244,7 @@ Quality Gate Padrão (Recomendado):
 └─ Blocker Issues: 0
 ```
 
-#### 4. Configurar Branch Analysis
+#### 4. Configurar Análise de Branch
 
 ```bash
 # SonarCloud → Project Settings → Branches and Pull Requests
@@ -1817,100 +1254,16 @@ Quality Gate Padrão (Recomendado):
 └─ Issues: Keep open
 ```
 
-### Docker Hub Integration Setup
+### Setup do GitHub Environment e Proteção de Branch
 
-- [ ] **Create Docker Hub account**
-  - [ ] Visit https://hub.docker.com
-  - [ ] Sign up or login
-
-- [ ] **Create Access Token**
-  - [ ] Account → Professional Settings → Security
-  - [ ] New Access Token
-  - [ ] Token description: `github actions-billing-service`
-  - [ ] Permissions: Read & Write
-  - [ ] Copy token (will not show again)
-
-- [ ] **Create public repository** (optional)
-  - [ ] Create → Repository
-  - [ ] Repository name: `billing-service`
-  - [ ] Visibility: Public
-  - [ ] Short description: "Billing microservice with Mercado Pago integration"
-
-### AWS Infrastructure Setup
-
-#### EKS Clusters
-
-Ensure você tem 3 clusters EKS:
-
-```
-Development:
-├─ Cluster name: billing-service-dev
-├─ Namespace: billing-development
-└─ Instance type: t3.medium (auto-scaling 2-5)
-
-Homologation:
-├─ Cluster name: billing-service-homolog
-├─ Namespace: billing-homologation
-└─ Instance type: t3.large (auto-scaling 2-5)
-
-Production:
-├─ Cluster name: billing-service-prod
-├─ Namespace: billing-production
-└─ Instance type: t3.xlarge (auto-scaling 3-10)
-```
-
-#### S3 Backend Terraform
-
-```bash
-# Create bucket and configure:
-aws s3api create-bucket \
-  --bucket billing-service-terraform-state-prod \
-  --region us-east-1
-
-# Enable versioning:
-aws s3api put-bucket-versioning \
-  --bucket billing-service-terraform-state-prod \
-  --versioning-configuration Status=Enabled
-
-# Enable encryption:
-aws s3api put-bucket-encryption \
-  --bucket billing-service-terraform-state-prod \
-  --server-side-encryption-configuration '{
-    "Rules": [{
-      "ApplyServerSideEncryptionByDefault": {
-        "SSEAlgorithm": "AES256"
-      }
-    }]
-  }'
-
-# Block public access:
-aws s3api put-public-access-block \
-  --bucket billing-service-terraform-state-prod \
-  --public-access-block-configuration \
-    "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
-```
-
-#### DynamoDB para Terraform Locks
-
-```bash
-aws dynamodb create-table \
-  --table-name terraform-locks \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --region us-east-1
-```
-
-### GitHub Environment and Branch Protection Setup
-
-#### Branch Protection Rules
+#### Regras de Proteção de Branch
 
 Configure em: **Settings > Branches > Add rule**
 
 ```
-Branch name pattern: main
+Padrão de nome da branch: main
 
-Requirements:
+Requisitos:
 ├─ Require a pull request before merging
 │  ├─ Dismiss stale pull request approvals: ✓
 │  ├─ Require code owner approval: ✓
@@ -1930,64 +1283,14 @@ Requirements:
 └─ Include administrators: ✓
 ```
 
-#### GitHub Environments
-
-Configure em: **Settings > Environments**
-
-**Development**
-
-```
-Environment name: development
-
-Protection rules:
-├─ Deployment branches: All branches
-└─ Reviewers: None (optional)
-
-Secrets (Inherit from repo level):
-├─ AWS_ROLE_TO_ASSUME
-└─ AWS_REGION
-```
-
-**Homologation**
-
-```
-Environment name: homologation
-
-Protection rules:
-├─ Deployment branches: Selected branches
-│  └─ main
-└─ Reviewers: 1 required
-
-Secrets (Inherit from repo level):
-├─ AWS_ROLE_TO_ASSUME
-└─ AWS_REGION
-```
-
-**Production**
-
-```
-Environment name: production
-
-Protection rules:
-├─ Deployment branches: Selected branches
-│  └─ main
-├─ Reviewers: 2 required
-├─ Deployment history: Only allow GitHub Actions
-└─ Wait timer: 15 minutes before granting access
-
-Secrets (Inherit from repo level):
-├─ AWS_ROLE_TO_ASSUME
-└─ AWS_REGION
-```
-
-### CI/CD Monitoring Execution
+### Monitoramento de Execução CI/CD
 
 #### 1. GitHub Actions
 
 ```
 Repository → Actions → CI/CD Pipeline
 
-View details:
+Visualizar detalhes:
 ├─ Build logs
 ├─ Test reports
 ├─ Coverage reports
@@ -2000,7 +1303,7 @@ View details:
 ```
 SonarCloud → Projects → billing-service
 
-Monitor:
+Monitorar:
 ├─ Coverage: Deve aumentar com cada commit
 ├─ Quality Gate: Status de passou/falhou
 ├─ Pull Requests: Análise em cada PR
@@ -2010,7 +1313,7 @@ Monitor:
 #### 3. AWS CloudWatch
 
 ```
-EKS Deployment Logs:
+Logs de Deployment EKS:
 
 # View deployment status
 kubectl rollout status deployment/billing-service -n billing-development
@@ -2023,9 +1326,9 @@ kubectl top nodes
 kubectl top pods -n billing-development
 ```
 
-### Running the Pipeline Manually
+### Executar o Pipeline Manualmente
 
-#### Trigger workflow via GitHub CLI
+#### Disparar workflow via GitHub CLI
 
 ```bash
 # Trigger pipeline para uma branch específica
@@ -2038,7 +1341,7 @@ gh workflow run ci-cd.yml -r main
 gh workflow run ci-cd.yml -f environment=production -r main
 ```
 
-#### Ou via web interface
+#### Ou via interface web
 
 1. Go to: **Actions > CI/CD Pipeline**
 2. Click: **Run workflow**
@@ -2047,199 +1350,60 @@ gh workflow run ci-cd.yml -f environment=production -r main
 
 ---
 
-## CI/CD Implementation Checklist
+# Parte VI: Infraestrutura e Deployment
 
-### Phase 1: Local Validation
+## Docker e Deployment
 
-- [ ] **Build locally**
-  ```bash
-  cd billing-service
-  mvn clean package
-  ```
-- [ ] **Run unit tests locally**
-  ```bash
-  mvn test
-  ```
-- [ ] **Check test coverage locally**
+### Visão Geral Dockerfile
 
-  ```bash
-  mvn jacoco:report
-  ```
+**Build multi-estágio para otimização:**
 
-  - [ ] Coverage >= 80%
+- **Estágio 1 - Build**: Compilação Maven com Java 21
+- **Estágio 2 - Runtime**: JRE otimizado com Alpine Linux
 
-- [ ] **Build Docker image locally**
+**Recursos de segurança:**
 
-  ```bash
-  docker build -t billing-service:test .
-  ```
-
-- [ ] **Test Docker image**
-  ```bash
-  docker run -p 8080:8080 billing-service:test
-  curl http://localhost:8080/actuator/health
-  ```
-
-### Phase 2: SonarCloud Setup
-
-- [ ] **Create SonarCloud account**
-- [ ] **Create SonarCloud organization**
-- [ ] **Create billing-service project**
-- [ ] **Configure Quality Gate** (80% coverage min)
-- [ ] **Generate SONAR_TOKEN**
-- [ ] **Verify project key**
-
-### Phase 3: Docker Hub Setup
-
-- [ ] **Create Docker Hub account**
-- [ ] **Create Access Token**
-- [ ] **Create public repository** (optional)
-
-### Phase 4: AWS Configuration
-
-- [ ] **Create OIDC Provider**
-- [ ] **Create IAM Role: `github-actions-billing-service`**
-- [ ] **Attach permissions to role**
-- [ ] **Note the Role ARN**
-- [ ] **Create S3 bucket for Terraform state**
-- [ ] **Enable versioning**
-- [ ] **Enable encryption**
-- [ ] **Create DynamoDB table for locks**
-- [ ] **Verify EKS Clusters** (3 clusters: dev, homolog, prod)
-
-### Phase 5: GitHub Configuration
-
-This documentation and the consolidated README have provided all necessary information. Continue with:
-
-- [ ] Configure Secrets (11 total)
-- [ ] Configure Branch Protection Rules
-- [ ] Create Environments (dev, homolog, prod)
-
-### Phase 6: Git & Push
-
-- [ ] Commit changes to feature branch
-- [ ] Push to feature branch
-- [ ] Create Pull Request
-
-### Phase 7: First Pipeline Run
-
-- [ ] Create Pull Request
-- [ ] Review GitHub Actions run
-- [ ] Review test reports
-- [ ] Review SonarQube analysis
-- [ ] Fix any issues found
-- [ ] Merge Pull Request
-
-### Phase 8: Validate Production Pipeline
-
-- [ ] Monitor Actions run after merge
-- [ ] Approve Production Deployment (if desired)
-- [ ] Monitor Production Deployment
-
-### Phase 9: Validation & Testing
-
-- [ ] Verify Docker image in Docker Hub
-- [ ] Verify EKS deployment
-- [ ] Test application endpoints
-- [ ] Monitor SonarQube metrics
-- [ ] Check GitHub Actions metrics
-
-### Phase 10: Documentation & Training
-
-- [ ] Review documentation
-- [ ] Update team documentation
-- [ ] Update main README.md
-
-### Phase 11: Ongoing Maintenance
-
-- [ ] Monitor metrics weekly
-- [ ] Update documentation quarterly
-- [ ] Review security regularly
-- [ ] Optimize performance
-
-### Final Verification
-
-After completing all phases, verify:
-
-```bash
-# 1. Check all files exist
-ls -la .github/workflows/ci-cd.yml
-ls -la terraform/variables.tf
-ls -la pom.xml
-
-# 2. Verify pom.xml has plugins
-grep "maven-surefire-plugin" pom.xml
-grep "jacoco-maven-plugin" pom.xml
-
-# 3. Check Git status
-git status
-
-# 4. Verify no secrets in code
-grep -r "token" --include="*.yml" --include="*.yaml" .
-```
-
-### Success Criteria
-
-Pipeline is ready when:
-
-✅ All phases 1-5 completed without errors
-✅ First PR run shows Build, Test, Quality stages passing
-✅ First main branch merge triggers full pipeline
-✅ Docker image pushed to Docker Hub
-✅ All environments deployed successfully
-✅ Health checks passing in all environments
-✅ SonarCloud shows quality metrics
-✅ No secrets exposed in code or logs
-✅ Team trained on deployment process
-
----
-
-# Part VI: Infrastructure & Deployment
-
-## Docker & Deployment
-
-### Dockerfile Overview
-
-**Multi-stage build for optimization:**
-
-- **Stage 1 - Build**: Maven compilation with Java 21
-- **Stage 2 - Runtime**: Optimized JRE with Alpine Linux
-
-**Security features:**
-
-- ✅ Non-root user execution
-- ✅ Health checks enabled
-- ✅ Minimal image size (Alpine)
-- ✅ Read-only filesystem compatible
+- ✅ Execução de usuário não-root
+- ✅ Health checks habilitados
+- ✅ Tamanho de imagem mínimo (Alpine)
+- ✅ Compatível com sistema de arquivos somente leitura
 
 **Healthchecks:**
 
-- Interval: 30 seconds
-- Timeout: 3 seconds
-- Retries: 3
-- Start period: 60 seconds
+- Intervalo: 30 segundos
+- Timeout: 3 segundos
+- Tentativas: 3
+- Período de início: 60 segundos
 
-### Docker Compose Services
+### Serviços Docker Compose
 
-#### PostgreSQL 17 Service
+#### Serviço DynamoDB Local
 
 ```yaml
-- Container: billing-service-postgres
-- Image: postgres:17-alpine
-- Port: 5433:5432
-- Database: billing_db
-- Credentials: postgres/postgres123
-- Health Check: pg_isready -U postgres
-- Volume: postgres_data (persistent)
+- Container: billing-service-dynamodb
+- Image: amazon/dynamodb-local:latest
+- Port: 8000:8000
+- Command: -jar DynamoDBLocal.jar -sharedDb
+- Health Check: curl -X GET http://localhost:8000/
+- Volume: dynamodb_data (persistent)
 - Network: billing-network
 ```
 
-#### Application Service
+#### Serviço de Inicialização DynamoDB
+
+```yaml
+- Container: billing-service-dynamodb-init
+- Cria tabelas automaticamente no DynamoDB Local
+- Depende de: dynamodb-local (healthy)
+- Script: ./init-scripts/02-dynamodb-init.sh
+```
+
+#### Serviço de Aplicação
 
 ```yaml
 - Container: billing-service-app
 - Port: 8080:8080
-- Depends On: postgres (healthy)
+- Depends On: dynamodb-local e dynamodb-init
 - Environment:
     - SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-development}
     - AWS_REGION: us-east-2
@@ -2248,16 +1412,7 @@ Pipeline is ready when:
 - Network: billing-network
 ```
 
-#### PgAdmin Service (Optional - `--profile dev`)
-
-```yaml
-- Container: billing-service-pgadmin
-- Port: 5050:80
-- Credentials: admin@billing-service.com / admin123
-- Web URL: http://localhost:5050
-```
-
-### Docker Build Commands
+### Comandos de Build Docker
 
 ```bash
 # Build image
@@ -2271,23 +1426,23 @@ docker image ls
 docker inspect billing-service:latest
 ```
 
-### Docker Compose Commands
+### Comandos Docker Compose
 
 ```bash
 # Start services
 docker-compose up -d --build
 
 # Start specific service
-docker-compose up -d postgres
+docker-compose up -d app
 
 # Logs
 docker-compose logs -f                    # All services
 docker-compose logs -f app                # Application only
-docker-compose logs -f postgres           # Database only
+docker-compose logs -f dynamodb-local     # Database only
 
 # Shell access
 docker-compose exec app bash              # App container shell
-docker-compose exec postgres psql -U postgres  # Database shell
+docker-compose exec dynamodb-local bash   # DynamoDB container shell
 
 # Stop
 docker-compose down                       # Keep volumes
@@ -2298,63 +1453,62 @@ docker-compose stats
 docker stats
 ```
 
-### Deployment Profiles
+### Perfis de Deployment
 
-#### Development Profile
+#### Perfil de Desenvolvimento
 
 ```yaml
 # application-development.yml
-spring.jpa.hibernate.ddl-auto: update # Auto create/alter schema
-spring.jpa.show-sql: true # Log SQL statements
+aws.dynamodb.table-name: challengeone-billing-dev
 logging.level: DEBUG # Detailed logging
 aws.sqs.auto-create-queue: true # Auto-create SQS queues
 ```
 
-#### Homologation Profile
+#### Perfil de Homologação
 
 ```yaml
 # application-homologation.yml
-spring.datasource.url: ${SPRING_DATASOURCE_URL} # From environment
-spring.jpa.hibernate.ddl-auto: validate # Validate only
+aws.dynamodb.table-name: ${AWS_DYNAMODB_TABLE_NAME}
+aws.region: ${AWS_REGION}
 logging.level: INFO # Information logging
 aws.sqs.auto-create-queue: false # Use existing queues
 ```
 
-#### Production Profile
+#### Perfil de Produção
 
 ```yaml
 # application-production.yml
-spring.datasource.url: ${SPRING_DATASOURCE_URL} # From secrets manager
-spring.jpa.hibernate.ddl-auto: validate # No schema changes
+aws.dynamodb.table-name: ${AWS_DYNAMODB_TABLE_NAME}
+aws.region: ${AWS_REGION}
 logging.level: WARN # Warnings only
 aws.sqs.auto-create-queue: false # Strict queue validation
 ```
 
 ---
 
-## Kubernetes Deployment
+## Deployment Kubernetes
 
-### Deployment Strategy
+### Estratégia de Deployment
 
-This service deploys to EKS via Terraform with three environments (dev, homolog, prod).
+Este serviço faz deploy para EKS via Terraform com três ambientes (dev, homolog, prod).
 
-### HPA Configuration
+### Configuração HPA
 
-- Minimum replicas: 2
-- Maximum replicas: 4
-- CPU threshold: 70%
+- Réplicas mínimas: 2
+- Réplicas máximas: 4
+- Threshold de CPU: 70%
 
-### Service & Ingress
+### Service e Ingress
 
-- Service Type: ClusterIP (internal)
-- Port: 8080
-- Health endpoint: `/actuator/health`
+- Tipo de Service: ClusterIP (interno)
+- Porta: 8080
+- Endpoint de saúde: `/actuator/health`
 
 ---
 
-## Terraform Configuration: Complete Guide
+## Configuração Terraform: Guia Completo
 
-### File Structure
+### Estrutura de Arquivos
 
 ```
 terraform/
@@ -2368,15 +1522,9 @@ terraform/
 ├── providers.tf                    # Provider configuration
 ├── variables.tf                    # Variáveis com defaults
 ├── outputs.tf                      # Outputs
-├── terraform.tfvars.dev            # Dev environment (environment only)
-├── terraform.tfvars.homologation   # Homolog environment (environment only)
-├── terraform.tfvars.production     # Production environment (environment only)
-├── secret.tfvars                   # SECRETS (não fazer commit!)
-├── secret.tfvars.template          # Exemplo de variáveis secretas
-└── terraform.tfvars.example        # Exemplo completo (legado)
 ```
 
-### Deployment Examples
+### Exemplos de Deployment
 
 #### Pré-requisitos
 
@@ -2385,7 +1533,7 @@ terraform/
 - kubeconfig acessível (EKS cluster)
 - Arquivo `secret.tfvars` com credenciais
 
-#### Exemplo: Deploy em Dev
+#### Exemplo: Deploy
 
 ```bash
 # Initiate with backend config
@@ -2402,31 +1550,7 @@ terraform plan \
 terraform apply dev.tfplan
 ```
 
-#### Exemplo: Deploy em Homologation
-
-```bash
-terraform init \
-  -backend-config=key=v4/service-billing/homologation/terraform.tfstate
-
-terraform apply \
-  -var-file=terraform.tfvars.homologation \
-  -var-file=secret.tfvars \
-  -auto-approve
-```
-
-#### Exemplo: Deploy em Production
-
-```bash
-terraform init \
-  -backend-config=key=v4/service-billing/production/terraform.tfstate
-
-terraform apply \
-  -var-file=terraform.tfvars.production \
-  -var-file=secret.tfvars \
-  -auto-approve
-```
-
-### Variables and Configuration
+### Variáveis e Configuração
 
 #### Obrigatórias (sem defaults)
 
@@ -2476,13 +1600,13 @@ deployment_name        - Kubernetes deployment name
 
 ---
 
-# Part VII: Database & Migrations
+# Parte VII: Banco de Dados e Migrações
 
-## Database & Migrations
+## Banco de Dados e Migrações
 
-### DynamoDB Configuration
+### Configuração DynamoDB
 
-**Overview:**
+**Visão Geral:**
 
 - **Table**: Challenge One Payment Service
 - **Partition Key**: `paymentId` (UUID)
@@ -2494,433 +1618,9 @@ deployment_name        - Kubernetes deployment name
 
 ---
 
-## DynamoDB Migration Guide
+## Limitações DynamoDB
 
-### Ação Necessária: Atualizar Código Java
-
-A infraestrutura Terraform foi atualizada para usar **DynamoDB** ao invés de **PostgreSQL RDS**.
-
-**Status:**
-
-- ✅ **Terraform**: Atualizado e pronto para deploy
-- ⏳ **Código Java**: Requer atualização manual
-
-### Alterações de Terraform Já Realizadas
-
-#### Arquivos Modificados
-
-1. **terraform/providers.tf**
-   - Remote state: `rds_billing` → `dynamodb_billing`
-
-2. **terraform/configmap.tf**
-   - Removido: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`
-   - Adicionado: `AWS_DYNAMODB_TABLE_NAME`
-
-3. **terraform/secret.tf**
-   - Removido: `SPRING_DATASOURCE_PASSWORD`
-
-4. **terraform/variables.tf**
-   - Removido: variável `db_password`
-
-5. **terraform/secret.tfvars**
-   - Removido: valor `db_password`
-
-### Dependency Changes (pom.xml)
-
-#### ❌ REMOVER (PostgreSQL/JPA):
-
-```xml
-<!-- PostgreSQL -->
-<dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>postgresql</artifactId>
-</dependency>
-
-<!-- Spring Data JPA -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jpa</artifactId>
-</dependency>
-
-<!-- Flyway Migrations -->
-<dependency>
-    <groupId>org.flywaydb</groupId>
-    <artifactId>flyway-core</artifactId>
-</dependency>
-```
-
-#### ✅ ADICIONAR (DynamoDB):
-
-```xml
-<!-- AWS SDK v2 - DynamoDB Enhanced Client -->
-<dependency>
-    <groupId>software.amazon.awssdk</groupId>
-    <artifactId>dynamodb-enhanced</artifactId>
-    <version>2.20.26</version>
-</dependency>
-
-<dependency>
-    <groupId>software.amazon.awssdk</groupId>
-    <artifactId>dynamodb</artifactId>
-    <version>2.20.26</version>
-</dependency>
-```
-
-### Entity Transformation
-
-#### ❌ ANTES (JPA):
-
-```java
-import javax.persistence.*;
-
-@Entity
-@Table(name = "payments")
-public class Payment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
-
-    @Column(name = "order_id", nullable = false)
-    private String orderId;
-
-    @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
-
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    // ... getters e setters
-}
-```
-
-#### ✅ DEPOIS (DynamoDB):
-
-```java
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
-import java.time.Instant;
-
-@DynamoDbBean
-public class Payment {
-
-    private String paymentId;      // UUID
-    private String createdAt;      // ISO-8601 timestamp (Sort Key)
-    private String orderId;
-    private BigDecimal amount;
-    private String currency;
-    private String status;         // PENDING, APPROVED, FAILED
-    private String paymentMethod;
-    private String merchantOrderId;
-    private String externalId;
-    private Map<String, String> metadata;
-
-    @DynamoDbPartitionKey
-    @DynamoDbAttribute("paymentId")
-    public String getPaymentId() {
-        return paymentId;
-    }
-
-    @DynamoDbSortKey
-    @DynamoDbAttribute("createdAt")
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    @DynamoDbSecondaryPartitionKey(indexNames = "OrderIdIndex")
-    @DynamoDbAttribute("orderId")
-    public String getOrderId() {
-        return orderId;
-    }
-
-    @DynamoDbSecondaryPartitionKey(indexNames = "StatusIndex")
-    @DynamoDbAttribute("status")
-    public String getStatus() {
-        return status;
-    }
-
-    // ... outros getters e setters
-
-    @PrePersist
-    public void prePersist() {
-        if (paymentId == null) {
-            paymentId = UUID.randomUUID().toString();
-        }
-        if (createdAt == null) {
-            createdAt = Instant.now().toString();
-        }
-    }
-}
-```
-
-### Repository Refactoring
-
-#### ❌ REMOVER (JPA Repository):
-
-```java
-@Repository
-public interface PaymentRepository extends JpaRepository<Payment, String> {
-    Optional<Payment> findByOrderId(String orderId);
-    List<Payment> findByStatus(PaymentStatus status);
-}
-```
-
-#### ✅ CRIAR (DynamoDB Repository):
-
-```java
-import org.springframework.stereotype.Repository;
-import software.amazon.awssdk.enhanced.dynamodb.*;
-import software.amazon.awssdk.enhanced.dynamodb.model.*;
-
-@Repository
-public class PaymentRepository {
-
-    private final DynamoDbTable<Payment> paymentTable;
-
-    public PaymentRepository(
-            DynamoDbEnhancedClient enhancedClient,
-            @Value("${aws.dynamodb.table-name}") String tableName) {
-
-        this.paymentTable = enhancedClient.table(
-            tableName,
-            TableSchema.fromBean(Payment.class)
-        );
-    }
-
-    /**
-     * Salvar/Atualizar pagamento
-     */
-    public Payment save(Payment payment) {
-        payment.prePersist();  // Garantir IDs
-        paymentTable.putItem(payment);
-        return payment;
-    }
-
-    /**
-     * Buscar por paymentId (PK) e createdAt (SK)
-     */
-    public Optional<Payment> findById(String paymentId, String createdAt) {
-        Key key = Key.builder()
-            .partitionValue(paymentId)
-            .sortValue(createdAt)
-            .build();
-
-        return Optional.ofNullable(paymentTable.getItem(key));
-    }
-
-    /**
-     * Buscar por orderId usando GSI OrderIdIndex
-     */
-    public List<Payment> findByOrderId(String orderId) {
-        QueryConditional queryConditional = QueryConditional
-            .keyEqualTo(Key.builder()
-                .partitionValue(orderId)
-                .build());
-
-        return paymentTable
-            .index("OrderIdIndex")
-            .query(queryConditional)
-            .items()
-            .stream()
-            .toList();
-    }
-
-    /**
-     * Buscar por status usando GSI StatusIndex
-     */
-    public List<Payment> findByStatus(String status) {
-        QueryConditional queryConditional = QueryConditional
-            .keyEqualTo(Key.builder()
-                .partitionValue(status)
-                .build());
-
-        return paymentTable
-            .index("StatusIndex")
-            .query(queryConditional)
-            .items()
-            .stream()
-            .toList();
-    }
-
-    /**
-     * Deletar pagamento
-     */
-    public void delete(String paymentId, String createdAt) {
-        Key key = Key.builder()
-            .partitionValue(paymentId)
-            .sortValue(createdAt)
-            .build();
-
-        paymentTable.deleteItem(key);
-    }
-}
-```
-
-### Configuration Updates
-
-#### ✅ CRIAR: DynamoDbConfig.java
-
-```java
-package com.fiap.billing_service.infrastructure.config;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-
-@Configuration
-public class DynamoDbConfig {
-
-    @Value("${aws.region:us-east-2}")
-    private String awsRegion;
-
-    @Value("${aws.access-key-id:#{null}}")
-    private String awsAccessKey;
-
-    @Value("${aws.secret-access-key:#{null}}")
-    private String awsSecretKey;
-
-    @Bean
-    public DynamoDbClient dynamoDbClient() {
-        var builder = DynamoDbClient.builder()
-            .region(Region.of(awsRegion));
-
-        // Se credenciais fornecidas (dev/homolog), usa-as
-        // Em produção, usar IAM Roles (IRSA)
-        if (awsAccessKey != null && !awsAccessKey.isEmpty()
-            && awsSecretKey != null && !awsSecretKey.isEmpty()) {
-
-            builder.credentialsProvider(
-                StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(awsAccessKey, awsSecretKey)
-                )
-            );
-        } else {
-            // Fallback para default credentials chain (IAM Role, env vars, etc)
-            builder.credentialsProvider(DefaultCredentialsProvider.create());
-        }
-
-        return builder.build();
-    }
-
-    @Bean
-    public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
-        return DynamoDbEnhancedClient.builder()
-            .dynamoDbClient(dynamoDbClient)
-            .build();
-    }
-}
-```
-
-#### Update Application Properties
-
-##### ❌ REMOVER:
-
-```properties
-# PostgreSQL
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
-spring.datasource.driver-class-name=org.postgresql.Driver
-
-# JPA
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-
-# Flyway
-spring.flyway.enabled=true
-spring.flyway.locations=classpath:db/migration
-```
-
-##### ✅ ADICIONAR:
-
-```properties
-# DynamoDB
-aws.dynamodb.table-name=${AWS_DYNAMODB_TABLE_NAME:challengeone-billing-dev}
-
-# AWS Credentials (opcional - fallback para IRSA)
-aws.access-key-id=${AWS_ACCESS_KEY:}
-aws.secret-access-key=${AWS_SECRET_KEY:}
-aws.region=${AWS_REGION:us-east-2}
-```
-
-### Deployment Steps
-
-#### 1. Deploy Tabela DynamoDB (PRIMEIRO)
-
-```bash
-cd infra-database/envs/dev
-./deploy.sh
-```
-
-#### 2. Atualizar Código Java
-
-- [ ] Atualizar pom.xml (dependências)
-- [ ] Atualizar Payment entity (anotações DynamoDB)
-- [ ] Criar PaymentRepository (DynamoDB)
-- [ ] Criar DynamoDbConfig
-- [ ] Atualizar application.properties
-- [ ] Adaptar services se necessário
-- [ ] Executar testes locais
-
-#### 3. Build Nova Imagem Docker
-
-```bash
-cd billing-service
-
-# Build
-docker build -t thiagotierre/billing-service:latest .
-
-# Push
-docker push thiagotierre/billing-service:latest
-```
-
-#### 4. Deploy Kubernetes (DEPOIS)
-
-```bash
-cd terraform
-
-# Reinicializar terraform (remote state mudou)
-terraform init -reconfigure
-
-# Aplicar mudanças
-terraform apply -var-file=terraform.tfvars -var-file=secret.tfvars
-```
-
-#### 5. Validar
-
-```bash
-# Verificar pods
-kubectl get pods -n challengeone-billing
-
-# Logs
-kubectl logs -n challengeone-billing -l app=billing --tail=100 -f
-
-# Testar endpoint
-kubectl port-forward -n challengeone-billing svc/billing 8080:8080
-curl http://localhost:8080/actuator/health
-```
-
-### Migration Reference
-
-| Aspecto          | PostgreSQL                          | DynamoDB                                 |
-| ---------------- | ----------------------------------- | ---------------------------------------- |
-| **Dependências** | spring-data-jpa, postgresql, flyway | aws-sdk dynamodb-enhanced                |
-| **Entity**       | `@Entity`, `@Table`, `@Id`          | `@DynamoDbBean`, `@DynamoDbPartitionKey` |
-| **Repository**   | `extends JpaRepository`             | Classe manual com DynamoDbTable          |
-| **Queries**      | JPQL/SQL                            | Key-based + GSI                          |
-| **Migrations**   | Flyway/Liquibase                    | Schema-less (não precisa)                |
-
-### Important Warnings
+Ao trabalhar com DynamoDB, observe as seguintes limitações:
 
 1. **Queries Complexas**: DynamoDB não suporta JOINs nem queries SQL avançadas
 2. **GSI Limits**: Máximo 20 GSIs por tabela
@@ -2930,13 +1630,13 @@ curl http://localhost:8080/actuator/health
 
 ---
 
-# Part VIII: Configuration & Operations
+# Parte VIII: Configuração e Operações
 
-## Configuration
+## Configuração
 
-### Environment Variables
+### Variáveis de Ambiente
 
-**Required:**
+**Obrigatórias:**
 
 ```properties
 # AWS Configuration
@@ -2952,38 +1652,19 @@ MERCADOPAGO_PUBLIC_KEY=PKG_TEST-your-key
 SPRING_PROFILES_ACTIVE=development|homologation|production
 ```
 
-**Optional:**
-
-```properties
-# Database (defaults to Docker values)
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres123
-
-# Email Service (AWS SES)
-AWS_SES_FROM_EMAIL=noreply@billing-service.com
-AWS_SES_CONFIGURATION_SET=email-tracking
-```
-
 ## Spring Profiles
 
-### development (Default)
+### development (Padrão)
 
 ```yaml
 spring:
   profiles:
     active: development
-  datasource:
-    url: jdbc:postgresql://localhost:5433/billing_db
-    username: postgres
-    password: postgres123
-  jpa:
-    hibernate.ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
 
 aws:
   region: us-east-2
+  dynamodb:
+    table-name: challengeone-billing-dev
   sqs:
     payment-request-queue: payment-request-queue
     payment-response-success-queue: payment-response-success-queue
@@ -3005,15 +1686,11 @@ logging:
 spring:
   profiles:
     active: homologation
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-  jpa:
-    hibernate.ddl-auto: validate
 
 aws:
   region: ${AWS_REGION}
+  dynamodb:
+    table-name: ${AWS_DYNAMODB_TABLE_NAME}
   sqs:
     auto-create-queue: false
 
@@ -3028,15 +1705,11 @@ logging:
 spring:
   profiles:
     active: production
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-  jpa:
-    hibernate.ddl-auto: validate
 
 aws:
   region: ${AWS_REGION}
+  dynamodb:
+    table-name: ${AWS_DYNAMODB_TABLE_NAME}
   sqs:
     auto-create-queue: false
 
@@ -3047,9 +1720,9 @@ logging:
 
 ---
 
-## Monitoring & Observability
+## Monitoramento e Observabilidade
 
-### Health Checks
+### Verificações de Saúde
 
 ```bash
 # Application health
@@ -3065,7 +1738,7 @@ curl http://localhost:8080/actuator/health/readiness
 curl http://localhost:8080/actuator/health/liveness
 ```
 
-### Distributed Tracing
+### Rastreamento Distribuído
 
 **Correlation ID propagation:**
 
@@ -3086,7 +1759,7 @@ public class CorrelationIdFilter implements OncePerRequestFilter {
 }
 ```
 
-### Audit Logging
+### Log de Auditoria
 
 **All payment events logged:**
 
@@ -3101,15 +1774,15 @@ public class CorrelationIdFilter implements OncePerRequestFilter {
 
 ---
 
-## Troubleshooting
+## Resolução de Problemas
 
-### Common Issues
+### Problemas Comuns
 
-#### 1. Port Already in Use
+#### 1. Porta Já em Uso
 
-**Error:** `Error starting ApplicationContext. Port 8080 is already in use`
+**Erro:** `Error starting ApplicationContext. Port 8080 is already in use`
 
-**Solution:**
+**Solução:**
 
 ```bash
 # Kill process on port
@@ -3121,30 +1794,33 @@ export SERVER_PORT=8081
 mvn spring-boot:run
 ```
 
-#### 2. Database Connection Failed
+#### 2. Falha na Conexão com Banco de Dados
 
-**Error:** `Unable to obtain a new Connection from the Driver`
+**Erro:** `Falha ao conectar com DynamoDB`
 
-**Solution:**
+**Solução:**
 
 ```bash
-# Check if PostgreSQL is running
+# Check if DynamoDB Local is running
 docker-compose ps
 # If not running, start it
-docker-compose up -d postgres
+docker-compose up -d dynamodb-local
 
-# Check PostgreSQL logs
-docker-compose logs postgres
+# Check DynamoDB logs
+docker-compose logs dynamodb-local
 
 # Test connection
-psql -h localhost -U postgres -p 5433
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+
+# Verify tables were created
+docker-compose logs dynamodb-init
 ```
 
-#### 3. AWS Credentials Invalid
+#### 3. Credenciais AWS Inválidas
 
-**Error:** `InvalidSignatureException`, `Unable to load or find cached SigV4Credentials`
+**Erro:** `InvalidSignatureException`, `Unable to load or find cached SigV4Credentials`
 
-**Solution:**
+**Solução:**
 
 ```bash
 # Verify .env file
@@ -3157,11 +1833,11 @@ aws sts get-caller-identity
 docker-compose restart app
 ```
 
-#### 4. Mercado Pago API Error
+#### 4. Erro de API Mercado Pago
 
-**Error:** `401 Unauthorized` from Mercado Pago API
+**Erro:** `401 Unauthorized` da API Mercado Pago
 
-**Solution:**
+**Solução:**
 
 ```bash
 # Verify token in .env
@@ -3174,11 +1850,11 @@ curl -H "Authorization: Bearer $MERCADOPAGO_ACCESS_TOKEN" \
 # Check if using APP_USR- token (not TEST)
 ```
 
-#### 5. SQS Queue Not Found
+#### 5. Fila SQS Não Encontrada
 
-**Error:** `AWS service threw an exception: Queue does not exist`
+**Erro:** `AWS service threw an exception: Queue does not exist`
 
-**Solution:**
+**Solução:**
 
 ```bash
 # Setup queues for development
@@ -3193,27 +1869,9 @@ chmod +x scripts/setup-sqs-dlq.sh
 aws sqs list-queues --endpoint-url http://localhost:4566
 ```
 
-#### 6. Migration Failed (Flyway)
+### Depuração
 
-**Error:** `Migration validation failed`
-
-**Solution:**
-
-```bash
-# Check migration file syntax
-cat src/main/resources/db/migration/V1__init_payments_table.sql
-
-# Clean schema and retry
-mvn flyway:clean
-mvn clean install
-
-# Check database logs
-docker-compose logs postgres
-```
-
-### Debugging
-
-#### Enable Debug Logging
+#### Habilitar Log de Debug
 
 ```bash
 # application.yml
@@ -3224,7 +1882,7 @@ logging:
     software.amazon.awssdk: TRACE
 ```
 
-#### JVM Remote Debugging
+#### Depuração JVM Remota
 
 ```bash
 # application-development.yml
@@ -3233,16 +1891,20 @@ java.opts: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 
 Connect debugger to `localhost:5005` in IDE.
 
-#### Database Inspection
+#### Inspeção de Banco de Dados (DynamoDB)
 
 ```bash
 # View all payments
-docker-compose exec postgres psql -U postgres -d billing_db \
-  -c "SELECT id, order_id, amount, status, created_at FROM payments ORDER BY created_at DESC LIMIT 10;"
+aws dynamodb scan --table-name challengeone-billing-dev \
+  --endpoint-url http://localhost:8000 \
+  --limit 10
 
-# Check for duplicates
-docker-compose exec postgres psql -U postgres -d billing_db \
-  -c "SELECT order_id, COUNT(*) FROM payments GROUP BY order_id HAVING COUNT(*) > 1;"
+# Query by orderId (GSI)
+aws dynamodb query --table-name challengeone-billing-dev \
+  --index-name OrderIdIndex \
+  --key-condition-expression "orderId = :orderId" \
+  --expression-attribute-values '{":orderId":{"S":"order-123"}}' \
+  --endpoint-url http://localhost:8000
 
 # View DLQ messages (in LocalStack)
 aws sqs receive-message --endpoint-url http://localhost:4566 \
@@ -3251,11 +1913,11 @@ aws sqs receive-message --endpoint-url http://localhost:4566 \
 
 ---
 
-# Part IX: Advanced Topics
+# Parte IX: Tópicos Avançados
 
-## Enterprise Features
+## Recursos Empresariais
 
-### Idempotency Guarantees
+### Garantias de Idempotência
 
 **Triple-layer protection:**
 
@@ -3276,7 +1938,7 @@ if (existing != null) {
 }
 ```
 
-### Dead Letter Queue Monitoring
+### Monitoramento de Dead Letter Queue
 
 **Automatic DLQ handling:**
 
@@ -3292,7 +1954,7 @@ aws sqs receive-message \
   --max-number-of-messages 10
 ```
 
-### Payment Retry Strategy
+### Estratégia de Repetição de Pagamento
 
 **On payment failure:**
 
@@ -3310,7 +1972,7 @@ aws:
     message-retention: 1209600 # 14 days
 ```
 
-### Security Considerations
+### Considerações de Segurança
 
 1. **Credentials Management**:
    - AWS keys loaded from environment variables
@@ -3334,16 +1996,15 @@ aws:
 
 ---
 
-## Performance Tuning
+## Ajuste de Performance
 
 ```bash
 # Increase JVM memory
 export JAVA_OPTS="-Xms1G -Xmx2G"
 docker-compose up -d
 
-# Database connection pool
-spring.datasource.hikari.maximum-pool-size: 20
-spring.datasource.hikari.minimum-idle: 5
+# DynamoDB provisioning
+# For on-demand tables, no additional configuration needed
 
 # SQS polling
 aws.sqs.wait-time-seconds: 20
@@ -3352,19 +2013,17 @@ aws.sqs.batch-size: 10
 
 ---
 
-## Support & Contributions
+## Suporte e Contribuições
 
-For issues or questions:
+Para dúvidas ou questões:
 
-1. Check [Troubleshooting](#troubleshooting) section
-2. Review application logs: `docker-compose logs -f app`
-3. Check payment status in database
-4. Inspect SQS messages in queue
+1. Consulte seção [Resolução de Problemas](#troubleshooting)
+2. Revise logs da aplicação: `docker-compose logs -f app`
+3. Verifique status dos pagamentos no banco de dados
+4. Inspecione mensagens SQS na fila
 
 ---
 
-**Last Updated**: February 2026  
-**Version**: 2.0  
-**Status**: ✅ Complete Consolidation
-
-This comprehensive README consolidates all 7 markdown files into a single, well-organized source of truth for the Billing Service project.
+**Última Atualização**: Fevereiro 2026  
+**Versão**: 2.0  
+**Status**: ✅ Consolidação Completa
