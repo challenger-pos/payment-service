@@ -1,71 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-
-    <!-- Properties -->
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
-    <property name="SERVICE_NAME" value="${spring.application.name:-billing-service}"/>
-    <property name="ENV" value="${DD_ENV:-dev}"/>
-
-    <!-- Console Appender with JSON format for Datadog -->
-    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp>
-                    <timeZone>UTC</timeZone>
-                </timestamp>
-                <version/>
-                <logLevel/>
-                <loggerName>
-                    <shortenedLoggerNameLength>40</shortenedLoggerNameLength>
-                </loggerName>
-                <message/>
-                <mdc/>
-                <stackTrace>
-                    <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                        <maxDepthPerThrowable>30</maxDepthPerThrowable>
-                        <maxLength>2048</maxLength>
-                        <shortenedClassNameLength>20</shortenedClassNameLength>
-                        <rootCauseFirst>true</rootCauseFirst>
-                    </throwableConverter>
-                </stackTrace>
-                <pattern>
-                    <pattern>
-                        {
-                            "service": "${SERVICE_NAME}",
-                            "env": "${ENV}"
-                        }
-                    </pattern>
-                </pattern>
-            </providers>
+    
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <!-- Root logger -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE_JSON"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 
-    <!-- Application specific loggers -->
     <logger name="com.fiap.billing_service" level="INFO"/>
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.web" level="WARN"/>
     <logger name="org.springframework.security" level="WARN"/>
     <logger name="software.amazon.awssdk" level="WARN"/>
-
-    <!-- Profile specific configurations -->
-    <springProfile name="dev,development,default">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_JSON"/>
-        </root>
-        <logger name="com.fiap.billing_service" level="DEBUG"/>
-    </springProfile>
-
-    <springProfile name="prod,production,homologation">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_JSON"/>
-        </root>
-        <logger name="com.fiap.billing_service" level="INFO"/>
-    </springProfile>
-
 </configuration>

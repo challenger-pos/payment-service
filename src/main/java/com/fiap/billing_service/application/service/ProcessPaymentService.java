@@ -111,6 +111,7 @@ public class ProcessPaymentService implements ProcessPaymentUseCase {
       // Query payment order status to get most up-to-date information
       try {
         log.info("Querying order status from Mercado Pago for payment: {}", payment.getId());
+        Thread.sleep(5000);
         Payment queryResult =
             paymentOrderQuery.getOrderStatus(processedPayment.getOrderPaymentId());
 
