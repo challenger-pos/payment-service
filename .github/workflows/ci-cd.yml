@@ -3,7 +3,6 @@ name: CI/CD - Spring Boot Build & Docker Hub Deploy
 on:
   push:
     branches:
-      - ci-dc
       - main
       - homologation
   workflow_dispatch:
