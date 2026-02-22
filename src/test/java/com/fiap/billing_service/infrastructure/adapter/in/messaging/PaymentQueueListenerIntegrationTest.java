@@ -178,7 +178,7 @@ class PaymentQueueListenerIntegrationTest {
   @DisplayName("Should handle JSON with missing required fields gracefully")
   void testReceivePaymentRequest_MissingRequiredFields_ThrowsException() throws Exception {
     // Arrange
-    String incompleteJson = "{\"first_name\": \"Test\"}"; // Missing required fields
+    String incompleteJson = "{\"firstName\": \"Test\"}"; // Missing required fields
 
     // Act - Should not throw, processPayment receives null/incomplete DTO
     listener.receivePaymentRequest(incompleteJson);
@@ -198,8 +198,8 @@ class PaymentQueueListenerIntegrationTest {
 
     String jsonWithExtra =
         String.format(
-            "{\"work_order_id\": \"%s\", \"customer_id\": \"%s\", \"amount\": %s, "
-                + "\"first_name\": \"Test\", \"unknownField\": \"value\"}",
+            "{\"workOrderId\": \"%s\", \"customerId\": \"%s\", \"amount\": %s, "
+                + "\"firstName\": \"Test\", \"unknownField\": \"value\"}",
             workOrderId, customerId, amount);
 
     // Act
